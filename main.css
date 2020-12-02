@@ -1,0 +1,33 @@
+/*
+Author: Enzo Mayo
+
+*/
+canvas {
+    border: 1px solid black;
+    display: block;
+    margin: 0 auto;
+    background: #ffffff;
+    pointer-events: auto;
+    
+}
+
+header h1 {
+    text-align: center;
+}
+
+body {
+    margin: 0;
+    padding:  0;
+    background: white;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5em;
+    
+}
+/* Make a dark theme because I hate being blinded.*/
+
+.info {
+    padding: 1%;
+    margin: 0 auto;
+    display: block;
+}
