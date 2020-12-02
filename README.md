@@ -33,19 +33,6 @@
     - `Up` or `Down` on DPad / Joystick move through game menu options
     - `A` button selects current button.
 
-## Tasks
-
-- [ ] Integrate state machine
-- [ ] Make Ball and Paddle object-oriented
-- [ ] Move to pointer events
-- [ ] Add support for Gamepad API
-- [ ] Move from hardcoded Level designs to JSON-based format.
-- [ ] Scale on orientation change and resize.
-
-
+### Definitions
 Paddle
 : The brick at the bottom of the screen. Can move left or right. 
-
-
-
-~~The world is flat~~
