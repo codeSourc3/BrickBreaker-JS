@@ -10,12 +10,13 @@ class MainMenuState extends State {
         super("Main Menu");
         this.title = 'Brick Breaker JS';
         this.buttons = [];
-        this.action = (e) => {
+        this.clicked = (e) => {
             // Due to StateMachine only calling onExit when a state is popped out.
             this.onExit(); 
             // TODO: Construct and pass in the player object, which is persisted across levels.
             Globals.getGameInstance().push(new Level1State());
-        }
+        };
+        this.clickHandler = this.clicked.bind(this);
     }
 
     /**
@@ -53,7 +54,7 @@ class MainMenuState extends State {
         
 
         console.log('Entering main menu state.');
-        Globals.getCanvasElement().onclick = this.action;
+        Globals.getCanvasElement().addEventListener('click', this.clickHandler);
         // Buttons take up the lower half of the screen.
         const startBtn = new Button('Start', 
         Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
@@ -74,9 +75,8 @@ class MainMenuState extends State {
     onExit() {
 
         console.log('Exiting main menu');
-        // addEventListener() and removeEventListener() weren't actually removing it.
-        // This gives me more control anyway.
-        Globals.getCanvasElement().onclick = null;
+        
+        Globals.getCanvasElement().removeEventListener('click', this.clickHandler);
     }
 
     /**
