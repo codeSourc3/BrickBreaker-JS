@@ -15,8 +15,8 @@ class MainMenuState extends State {
             this.onExit(); 
             // TODO: Construct and pass in the player object, which is persisted across levels.
             Globals.getGameInstance().push(new Level1State());
-        };
-        this.clickHandler = this.clicked.bind(this);
+        }.bind(this);
+        //this.clickHandler = this.clicked.bind(this);
     }
 
     /**
@@ -54,7 +54,7 @@ class MainMenuState extends State {
         
 
         console.log('Entering main menu state.');
-        Globals.getCanvasElement().addEventListener('click', this.clickHandler);
+        Globals.getCanvasElement().addEventListener('click', this.clicked);
         // Buttons take up the lower half of the screen.
         const startBtn = new Button('Start', 
         Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
@@ -76,7 +76,7 @@ class MainMenuState extends State {
 
         console.log('Exiting main menu');
         
-        Globals.getCanvasElement().removeEventListener('click', this.clickHandler);
+        Globals.getCanvasElement().removeEventListener('click', this.clicked);
     }
 
     /**
