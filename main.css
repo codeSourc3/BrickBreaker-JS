@@ -1,6 +1,6 @@
 /*
 Author: Enzo Mayo
-
+Date: 12/09/2020
 */
 canvas {
     border: 1px solid black;
@@ -28,6 +28,26 @@ body {
 
 .info {
     padding: 1%;
+    border: 1px solid black;
     margin: 0 auto;
-    display: block;
+}
+
+/*For error output*/
+#output {
+    text-align: center;
+}
+
+.info div {
+    display: none;
+}
+
+.info h1 {
+    text-decoration: underline;
+}
+
+/*
+Utility class for CSS.
+*/
+.show {
+    display: block !important;
 }

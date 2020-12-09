@@ -1,3 +1,7 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 import { Globals } from "../game.js";
 
 class UIObject {
@@ -55,7 +59,7 @@ export class Button extends UIObject {
 		 */
     constructor(text, x, y, width, height) {
         super(x, y, width, height);
-        this.clicked = false;
+        this._clicked = false;
         this.text = text;
     }
 
@@ -74,6 +78,7 @@ export class Button extends UIObject {
     clickedOn(pointer) {
         if (this.intersects(pointer)) {
             this.handler();
+            this._clicked = true;
             return true;
         }
         return false;

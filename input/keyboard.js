@@ -1,4 +1,7 @@
-
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 const Key = {
     _pressed: {},
 

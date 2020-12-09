@@ -1,4 +1,9 @@
 /**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
+
+/**
  * Handles ball position, width and bouncing logic.
  */
 class Ball {

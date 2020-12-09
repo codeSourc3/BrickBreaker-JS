@@ -1,5 +1,11 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 
-
+/**
+ * 
+ */
 class Brick {
     constructor(x, y, status, brickWidth = 75, brickHeight = 20) {
         this._x = x;
@@ -34,10 +40,15 @@ class Brick {
         this._x = num;
     }
 
+
     get width() {
         return this._brickWidth;
     }
 
+    /**
+     * Gets the height of the brick.
+     * @returns a number 
+     */
     get height() {
         return this._brickHeight;
     }
@@ -49,6 +60,8 @@ class Brick {
     isDestroyed() {
         return this._status <= 0;
     }
+
+    
 }
 
 class Bricks {
@@ -58,21 +71,29 @@ class Bricks {
         this._padding = padding;
         this._offsetTop = offsetTop;
         this._offsetLeft = offsetLeft;
+        
         this._bricks = [];
         for (let c = 0; c < this._colCount; c++) {
             this._bricks[c] = [];
             for (let r = 0; r < this._rowCount; r++) {
                 this._bricks[c][r] = new Brick(0,0, 1);
-                console.info(`Brick at ${c},${r}: ${this._bricks[c][r]}`);
+                
             }
         }
     }
 
+    static dimensions(brick) {
+        return {
+            width: brick.width,
+            height: brick.height
+        };
+    }
+
     draw(ctx) {
-        ctx.beginPath();
+        
         for (let c = 0; c < this._colCount; c++) {
             for (let r = 0; r < this._rowCount; r++) {
-                if (this._bricks[c][r].status == 1) {
+                if (!this._bricks[c][r].isDestroyed()) {
                     let brickX = (c * (this._bricks[c][r].width + this._padding)) + this._offsetLeft;
                     let brickY = (r * (this._bricks[c][r].height + this._padding)) + this._offsetTop;
                     this._bricks[c][r].x = brickX;
@@ -83,7 +104,7 @@ class Bricks {
                 }
             }
         }
-        ctx.closePath();
+        
     }
 
     /**
@@ -110,12 +131,11 @@ class Bricks {
         // return true if all bricks are destroyed
         let allDestroyed = false;
         for (let col of this._bricks) {
-            allDestroyed = col.every((brick) => !brick.isDestroyed());
+            allDestroyed = col.every((brick) => brick.isDestroyed());
         }
         return allDestroyed;
     }
     
 
 }
-export {Brick};
-export {Bricks};
+export {Brick, Bricks};

@@ -1,3 +1,7 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 import { Globals } from "../game.js";
 
 /**
@@ -57,6 +61,14 @@ class Paddle {
     set paddleX(num) {
         this._paddleX = num;
     }
+
+    set paddleWidth(newWidth) {
+        this._paddleWidth = newWidth;
+    }
+
+    set paddleHeight(newHeight) {
+        this._paddleHeight = newHeight;
+    }
     
     moveLeft() {
         this._paddleX -= 7;
@@ -72,44 +84,56 @@ class Paddle {
         }
     }
 
-   
+   _onKeyDown(evt) {
+       if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a' ) {
+            this._leftPressed = true;
+            evt.preventDefault();
+        } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
+            this._rightPressed = true;
+            evt.preventDefault();
+        }
+   }
+
+   _onKeyUp(evt) {
+        if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a') {
+            this._leftPressed = false;
+            evt.preventDefault();
+        } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
+            this._rightPressed = false;
+            evt.preventDefault();
+        }
+   }
+
+   _onPointerMove(evt) {
+        let relativeX = evt.clientX - Globals.getCanvasElement().offsetLeft;
+        if (relativeX > 0 && relativeX < Globals.getCanvasElement().width) {
+            this._paddleX = relativeX - this._paddleWidth / 2;
+            if (this._paddleX < 0) {
+                this._paddleX = 0;
+            }
+            if (this._paddleX + this._paddleWidth > Globals.getGameDimensions().width) {
+                this._paddleX = Globals.getGameDimensions().width - this._paddleWidth;
+            }
+        }
+   }
 
     /**
      * 
      * @param {Event} evt the code handles keydown, keyup, and pointermove
      */
     handleEvent(evt) {
+        switch(evt.type) {
+            case 'keydown':
+                this._onKeyDown(evt);
+                break;
+            case 'keyup':
+                this._onKeyUp(evt);
+                break;
+            case 'pointermove':
+                this._onPointerMove(evt);
+                break;
+        }
         
-        if (evt.type === 'keydown') {
-            if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a' ) {
-                this._leftPressed = true;
-                evt.preventDefault();
-            } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
-                this._rightPressed = true;
-                evt.preventDefault();
-            }
-        } else if (evt.type === 'keyup') {
-            if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a') {
-                this._leftPressed = false;
-                evt.preventDefault();
-            } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
-                this._rightPressed = false;
-                evt.preventDefault();
-            }
-        }
-
-        if (evt.type === 'pointermove') {
-            let relativeX = evt.clientX - Globals.getCanvasElement().offsetLeft;
-            if (relativeX > 0 && relativeX < Globals.getCanvasElement().width) {
-                this._paddleX = relativeX - this._paddleWidth / 2;
-                if (this._paddleX < 0) {
-                    this._paddleX = 0;
-                }
-                if (this._paddleX + this._paddleWidth > Globals.getGameDimensions().width) {
-                    this._paddleX = Globals.getGameDimensions().width - this._paddleWidth;
-                }
-            }
-        }
         
     }
 

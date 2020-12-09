@@ -1,24 +1,35 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 import { State } from "./state.js";
 import { Paddle } from '../entities/paddle.js';
 import { Ball } from '../entities/ball.js';
 import { Globals } from '../game.js';
+import { Bricks } from '../entities/bricks.js';
+import { WinGameState } from "./WinGameState.js";
+import { GameOverState } from './gameoverstate.js';
 
+const ENTITY_LIMIT = 50;
 /**
  * Base class for all levels.
  * @interface
  */
 export class LevelState extends State {
-    constructor(player, title = 'Level ???') {
+    constructor(player, bricks, title = 'Level ???') {
         super(title);
         this._player = player;
-        const paddleHeight = 10;
-        const paddleWidth = 75;
+        
+        
         const context = Globals.getCanvasElement();
+        const paddleWidth = context.width / 10;
+        const paddleHeight = context.height / 25;
         this._paddle = new Paddle((context.width - paddleWidth) / 2, paddleHeight, paddleWidth);
         const x = context.width / 2;
         const y = context.height - 30;
-        const ballRadius = 10;
+        const ballRadius = Math.min(context.height, context.width) / 30;
         this._ball = new Ball(x, y, ballRadius);
+        this._bricks = new Bricks(5, 10, 10);
         this._isPaused = false;
         this._ballData = {
             x: 0,
@@ -34,6 +45,14 @@ export class LevelState extends State {
     update() {
 
         let canvas = Globals.getCanvasElement();
+
+        this._bricks.intersects(this._ball, (ball, brick) => {
+            ball.flipDy();
+            brick.damage();
+        });
+        if (this._bricks.allBricksDestroyed()) {
+            this.onWin();
+        }
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
             if (this._ball.x > this._paddle.paddleX && this._ball.x < this._paddle.paddleX + this._paddle.paddleWidth) {
@@ -69,7 +88,9 @@ export class LevelState extends State {
         this._player.draw(ctx);
         this._paddle.draw(ctx);
         this._ball.draw(ctx);
+        this._bricks.draw(ctx);
     }
+
 
     /**
      * Will not be removed until exit.
@@ -86,6 +107,7 @@ export class LevelState extends State {
             }
         }
     }
+
 
     /**
      * Can set up the environment here (event listeners, etc.)
@@ -141,6 +163,15 @@ export class LevelState extends State {
         console.log('Game paused');
 
         // Push InGameMenuState onto stack
+    }
+
+    /**
+     * Abstract method extended by subclasses. For example: 
+     * going to the next level when we want.
+     */
+    onWin() {
+        this.onExit();
+        Globals.getGameInstance().push(new WinGameState());
     }
 
     /**

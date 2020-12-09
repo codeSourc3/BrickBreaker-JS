@@ -1,3 +1,7 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 import {State} from './state.js';
 import {centerText} from '../ui/components.js';
 import {Globals} from '../game.js';

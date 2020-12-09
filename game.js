@@ -1,4 +1,7 @@
-
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 
 import {State, StateStack} from './state/state.js';
 //import { Level1State } from "./state/gamestate.js";
@@ -44,10 +47,10 @@ const Game = {
 
     /**
      * 
-     * @param {HTMLCanvasElement} canvasElementId 
+     * Initialize the game.
      */
-    init(canvasElementId) {
-        let canvasElement = document.getElementById(canvasElementId);
+    init() {
+        let canvasElement = document.getElementsByTagName('canvas')[0];
         //console.info('Canvas element of ' + canvasElementId, canvasElement);
         Game._canvas = canvasElement;
         
@@ -175,6 +178,11 @@ const Globals = {
      */
     getCanvasElement() {
         return Game._canvas;
+    },
+
+
+    logError(errorContent) {
+        document.getElementById('output').textContent = errorContent;
     }
 };
 

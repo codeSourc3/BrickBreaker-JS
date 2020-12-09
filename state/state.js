@@ -1,6 +1,7 @@
 /**
  * Manages game state by implementing a version of the state machine.
  * @author Enzo Mayo
+ * @since 12/09/2020
  */
 
  class StateList {

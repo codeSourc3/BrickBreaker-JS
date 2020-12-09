@@ -1,4 +1,7 @@
-
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 /**
  * Player has lives, score, current level,
  * and controls the game. They can pause the game

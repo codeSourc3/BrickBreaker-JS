@@ -1,3 +1,7 @@
+/**
+ * @author Enzo Mayo
+ * @since 12/09/2020
+ */
 import {State} from './state.js';
 import {Globals} from '../game.js';
 import {Level1State} from './gamestate.js';
@@ -5,18 +9,21 @@ import {centerText, Button} from '../ui/components.js';
 
 
 
+
 class MainMenuState extends State {
     constructor() {
         super("Main Menu");
         this.title = 'Brick Breaker JS';
+        /**
+         * @type {Button[]}
+         */
         this.buttons = [];
-        this.clicked = (e) => {
-            // Due to StateMachine only calling onExit when a state is popped out.
-            this.onExit(); 
-            // TODO: Construct and pass in the player object, which is persisted across levels.
-            Globals.getGameInstance().push(new Level1State());
-        }.bind(this);
-        //this.clickHandler = this.clicked.bind(this);
+        this.click = (e) => {
+            for (const btn of this.buttons) {
+                btn.clickedOn(e);
+            }
+        };
+        this.action = this.click.bind(this);
     }
 
     /**
@@ -24,6 +31,7 @@ class MainMenuState extends State {
       */
      update() {
         // May resize any buttons.
+
     }
 
     /**
@@ -54,14 +62,18 @@ class MainMenuState extends State {
         
 
         console.log('Entering main menu state.');
-        Globals.getCanvasElement().addEventListener('click', this.clicked);
+        Globals.getCanvasElement().addEventListener('click', this.action);
         // Buttons take up the lower half of the screen.
         const startBtn = new Button('Start', 
-        Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
-        Globals.getCanvasElement().height / 3, 
-        Globals.getCanvasElement().width / 6, 
-        Globals.getCanvasElement().height / 8);
-
+            Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
+            Globals.getCanvasElement().height / 3, 
+            Globals.getCanvasElement().width / 6, 
+            Globals.getCanvasElement().height / 8);
+        startBtn.setHandler(() => {
+            this.onExit();
+            Globals.getGameInstance().push(new Level1State());
+        });
+        startBtn.handler.bind(this);
         this.buttons.push(startBtn);
         
     }
@@ -75,8 +87,9 @@ class MainMenuState extends State {
     onExit() {
 
         console.log('Exiting main menu');
-        
-        Globals.getCanvasElement().removeEventListener('click', this.clicked);
+        // addEventListener() and removeEventListener() weren't actually removing it.
+        // This gives me more control anyway.
+        Globals.getCanvasElement().removeEventListener('click', this.action);
     }
 
     /**
