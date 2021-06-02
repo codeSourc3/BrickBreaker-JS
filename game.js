@@ -43,6 +43,8 @@ const Game = {
      * 
 		 */
     _ratio : null,
+
+    _paused: false,
     
 
     /**
@@ -89,8 +91,9 @@ const Game = {
         if (Game._canvas.width !== document.documentElement.offsetWidth ) {
             Game.resize();
         }
-
-        Game._gameMode.update();
+        if (!Game._paused) {
+            Game._gameMode.update();
+        }
         Game._gameMode.render(Game._context);
         
         Game._frameId = window.requestAnimationFrame(Game.update);
@@ -109,14 +112,16 @@ const Game = {
      * 
      */
     pauseGame() {
-        Game._frameId = window.cancelAnimationFrame(Game._frameId);
+        //Game._frameId = window.cancelAnimationFrame(Game._frameId);
+        Game._paused = true;
     },
 
     /**
      * 
      */
     resumeGame() {
-        Game._frameId = window.requestAnimationFrame(Game.update);
+        //Game._frameId = window.requestAnimationFrame(Game.update);
+        Game._paused = false;
     }
 
     

@@ -3,6 +3,8 @@
  * @since 12/09/2020
  */
 
+import { Ball } from "./ball.js";
+
 /**
  * 
  */
@@ -71,7 +73,9 @@ class Bricks {
         this._padding = padding;
         this._offsetTop = offsetTop;
         this._offsetLeft = offsetLeft;
-        
+        /**
+         * @type {Brick[][]}
+         */
         this._bricks = [];
         for (let c = 0; c < this._colCount; c++) {
             this._bricks[c] = [];
@@ -80,6 +84,7 @@ class Bricks {
                 
             }
         }
+        console.info(this._bricks);
     }
 
     static dimensions(brick) {
@@ -109,10 +114,9 @@ class Bricks {
 
     /**
      * 
-     * @param {Ball} ball 
-     * @param {function(Ball, Brick)} callback 
+     * @param {Ball} ball the ball
      */
-    intersects(ball, callback) {
+    intersects(ball) {
         for (let c = 0; c < this._colCount; c++) {
             for (let r = 0; r < this._rowCount; r++) {
                 let b = this._bricks[c][r];
@@ -120,19 +124,24 @@ class Bricks {
                 if (!b.isDestroyed()) {
                     // if center of ball to be inside brick the following must = true
                     if (ball.x > b.x && ball.x < b.x + b.width && ball.y > b.y && ball.y < b.y + b.height) {
-                        callback(ball, b);
+                        ball.flipDy();
+                        b.damage();
+                        console.info({b});
                     }
                 }
             }
         }
     }
 
+    /**
+     * Checks if all bricks are destroyed.
+     * @returns {boolean} true if all bricks are destroyed.
+     */
     allBricksDestroyed() {
         // return true if all bricks are destroyed
-        let allDestroyed = false;
-        for (let col of this._bricks) {
-            allDestroyed = col.every((brick) => brick.isDestroyed());
-        }
+        let allDestroyed = this._bricks.flat().every(b => b._status === 0);
+        
+        //console.info('All bricks destroyed', this._bricks.flat().every(b => b.isDestroyed()));
         return allDestroyed;
     }
     

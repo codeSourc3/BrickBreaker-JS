@@ -29,7 +29,7 @@ export class LevelState extends State {
         const y = context.height - 30;
         const ballRadius = Math.min(context.height, context.width) / 30;
         this._ball = new Ball(x, y, ballRadius);
-        this._bricks = new Bricks(5, 10, 10);
+        this._bricks = bricks;
         this._isPaused = false;
         this._ballData = {
             x: 0,
@@ -45,14 +45,14 @@ export class LevelState extends State {
     update() {
 
         let canvas = Globals.getCanvasElement();
-
-        this._bricks.intersects(this._ball, (ball, brick) => {
-            ball.flipDy();
-            brick.damage();
-        });
+        
+        this._bricks.intersects(this._ball);
         if (this._bricks.allBricksDestroyed()) {
+            console.info('All bricks destroyed');
             this.onWin();
+            
         }
+
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
             if (this._ball.x > this._paddle.paddleX && this._ball.x < this._paddle.paddleX + this._paddle.paddleWidth) {
@@ -147,9 +147,10 @@ export class LevelState extends State {
     onPause() {
         // Pause the game
         // Disable paddle movement
-        window.removeEventListener('keydown', this._paddle, true);
-        window.removeEventListener('keyup', this._paddle, true);
-        window.removeEventListener('pointermove', this._paddle, true);
+        console.info('Pausing Level');
+        window.removeEventListener('keydown', this._paddle);
+        window.removeEventListener('keyup', this._paddle);
+        window.removeEventListener('pointermove', this._paddle);
 
         // Save ball velocity
         this._ballData.x = this._ball.x;
@@ -170,6 +171,7 @@ export class LevelState extends State {
      * going to the next level when we want.
      */
     onWin() {
+        console.info('Game won');
         this.onExit();
         Globals.getGameInstance().push(new WinGameState());
     }

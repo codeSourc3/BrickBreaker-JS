@@ -37,8 +37,19 @@
   * Base class that all States inherit from.
   */
  class State {
+     /**
+      * 
+      * @param {string} name 
+      */
      constructor(name) {
+         /**
+          * @private
+          */
          this._name = name;
+     }
+
+     get name() {
+         return this._name;
      }
 
      /**
@@ -50,9 +61,10 @@
 
      /**
       * Called after render. Draws the state to the screen.
+      * @param {CanvasRenderingContext2D} ctx the canvas context.
       */
      render(ctx) {
-
+        //
      }
 
      /**
