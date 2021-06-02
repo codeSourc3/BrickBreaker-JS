@@ -1,3 +1,6 @@
+import { Globals } from '../game.js';
+import {Vec2} from '../math/vec2.js';
+
 /**
  * @author Enzo Mayo
  * @since 12/09/2020
@@ -8,10 +11,8 @@
  */
 class Ball {
 	constructor(x, y, ballRadius) {
-        this._x = x;
-        this._y = y;
-        this._dx = 2;
-        this._dy = -2;
+        this._pos = new Vec2(x, y);
+        this._delta = new Vec2(2, -2);
         this._ballRadius = ballRadius;
     }
 
@@ -23,20 +24,13 @@ class Ball {
         // could convert to Path2D object for modularity.
         context.save();
         context.beginPath();
-        context.arc(this._x, this._y, this._ballRadius, 0, Math.PI * 2);
+        context.arc(this._pos.x, this._pos.y, this._ballRadius, 0, Math.PI * 2);
         context.fillStyle = '#0095DD';
         context.fill();
         context.closePath();
         context.restore();
 
-        if (this._x + this._dx > context.canvas.width - this._ballRadius || this._x + this._dx < this._ballRadius) {
-            this._dx = -this._dx;
-        }
-        // check bottom and check top
-        // TODO: Allow ball to bounce off side of paddle.
-        if (this._y + this._dy < this._ballRadius) {
-            this._dy = -this._dy;
-        }
+        
     }
 
     /**
@@ -46,19 +40,19 @@ class Ball {
     increaseSpeed(increment) {
         let amnt = Math.floor(Math.abs(increment));
         
-        if (this.dx > 0) {
+        if (this._delta.x > 0) {
             // goint rightwards.
-            this.dx += amnt;
-        } else if (this.dx < 0) {
+            this._delta.x += amnt;
+        } else if (this._delta.x < 0) {
             // going leftwards.
-            this.dx -= amnt;
+            this._delta.x -= amnt;
         }
-        if (this.dy > 0) {
+        if (this._delta.y > 0) {
             // going downwards.
-            this.dy += amnt;
-        } else if (this.dy < 0) {
+            this._delta.y += amnt;
+        } else if (this._delta.y < 0) {
             // going upwards.
-            this.dy -= amnt;
+            this._delta.y -= amnt;
         }
         
     }
@@ -70,68 +64,77 @@ class Ball {
     decreaseSpeed(increment) {
         let amnt = Math.floor(Math.abs(increment));
 
-        if (this.dx > 0) {
-            this.dx -= amnt;
-        } else if (this.dx < 0) {
-            this.dx += amnt;
+        if (this._delta.x > 0) {
+            this._delta.x -= amnt;
+        } else if (this._delta.x < 0) {
+            this._delta.x += amnt;
         }
 
-        if (this.dy > 0) {
-            this.dy -= amnt;
-        } else if (this.dy < 0) {
-            this.dy += amnt;
+        if (this._delta.y > 0) {
+            this._delta.y -= amnt;
+        } else if (this._delta.y < 0) {
+            this._delta.y += amnt;
         }
     }
 
     update() {
-        this.x += this.dx;
-        this.y += this.dy;
+        const {width} = Globals.getGameDimensions();
+        if (this._pos.x + this._delta.x > width - this._ballRadius || this._pos.x + this._delta.x < this._ballRadius) {
+            this._delta.x = -this._delta.x;
+        }
+        // check bottom and check top
+        if (this._pos.y + this._delta.y < this._ballRadius) {
+            Vec2.invertY(this._delta);
+        }
+
+        this._pos.x += this._delta.x;
+        this._pos.y += this._delta.y;
     }
 
     get x() {
-        return this._x;
+        return this._pos.x;
     }
 
     set x(num) {
-        this._x = num;
+        this._pos.x = num;
     }
 
     get y() {
-        return this._y;
+        return this._pos.y;
     }
 
     set y(num) {
-        this._y = num;
+        this._pos.y = num;
     }
 
     get dy() {
-        return this._dy;
+        return this._delta.y;
     }
 
     set dy(num) {
-        this._dy = num;
+        this._delta.y = num;
     }
 
     get dx() {
-        return this._dx;
+        return this._delta.x;
     }
 
     set dx(num) {
-        this._dx = num;
+        this._delta.x = num;
     }
 
     /**
      * Flips the sign of the delta X (the change in distance on the X-axis).
      */
     flipDx() {
-        this._dx = -this._dx;
+        this._delta.x = -this._delta.x;
     }
 
     /**
      * Flips the sign of the delta Y (the change in distance on the Y-axis).
      */
     flipDy() {
-        this._dy = -this._dy;
+        this._delta.y = -this._delta.y;
     }
 
     get radius() {

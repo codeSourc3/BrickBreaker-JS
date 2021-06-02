@@ -3,6 +3,7 @@
  * @since 12/09/2020
  */
 import { State } from "./state.js";
+import {normalizeBox, normalizePoint, rescale, rescaleBox} from '../math/sizing.js';
 import { Paddle } from '../entities/paddle.js';
 import { Ball } from '../entities/ball.js';
 import { Globals } from '../game.js';
@@ -16,6 +17,12 @@ const ENTITY_LIMIT = 50;
  * @interface
  */
 export class LevelState extends State {
+    /**
+     * Constructs a level state.
+     * @param {Player} player the current player.
+     * @param {Bricks} bricks the bricks object.
+     * @param {string} title the title of the level
+     */
     constructor(player, bricks, title = 'Level ???') {
         super(title);
         this._player = player;
@@ -52,7 +59,7 @@ export class LevelState extends State {
             this.onWin();
             
         }
-
+        this._bricks.recalculateSize();
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
             if (this._ball.x > this._paddle.paddleX && this._ball.x < this._paddle.paddleX + this._paddle.paddleWidth) {
@@ -86,6 +93,7 @@ export class LevelState extends State {
         ctx.clearRect(0, 0, Globals.getCanvasElement().width, Globals.getCanvasElement().height);
         // Draw player info
         this._player.draw(ctx);
+        //this._bricks.recalculateSize();
         this._paddle.draw(ctx);
         this._ball.draw(ctx);
         this._bricks.draw(ctx);

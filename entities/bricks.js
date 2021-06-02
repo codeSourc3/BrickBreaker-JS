@@ -3,6 +3,8 @@
  * @since 12/09/2020
  */
 
+import { Globals } from "../game.js";
+import { normalizeBox, rescaleBox } from "../math/sizing.js";
 import { Ball } from "./ball.js";
 
 /**
@@ -15,6 +17,8 @@ class Brick {
         this._brickWidth = brickWidth;
         this._brickHeight = brickHeight;
         this._status = status;
+        // Normalized dimensions.
+        this._normalized = normalizeBox(this._x, this._y, this._brickWidth, this._brickHeight);
     }
 
 
@@ -24,6 +28,16 @@ class Brick {
         ctx.fillStyle = '#0095DD';
         ctx.fill();
         ctx.restore();
+    }
+
+    rescale() {
+        let {x, y, width, height} = rescaleBox(this._normalized);
+        this._normalized = normalizeBox(x, y, width, height);
+        console.info('Brick X: ', this._x, 'Brick Y: ', this._y);
+        this._x = x;
+        this._y = y;
+        this._brickWidth = width;
+        this._brickHeight = height;
     }
 
     get x() {
@@ -48,11 +62,27 @@ class Brick {
     }
 
     /**
+     * Sets the brick of the width.
+     * @param {number} value the value.
+     */
+    set width(value) {
+        this._brickWidth = Number(value);
+    }
+
+    /**
      * Gets the height of the brick.
      * @returns a number 
      */
     get height() {
         return this._brickHeight;
+    }
+
+    /**
+     * Sets the height of the brick.
+     * @param {number} value the value.
+     */
+    set height(value) {
+        this._brickHeight = Number(value);
     }
 
     damage(damageAmount=1) {
@@ -77,14 +107,21 @@ class Bricks {
          * @type {Brick[][]}
          */
         this._bricks = [];
+        let brickWidth = Globals.getGameDimensions().width - offsetLeft;
+        brickWidth = brickWidth - (padding * colCount);
+        brickWidth /= colCount;
+        console.log('Calculated width: ', brickWidth);
+
+        let brickHeight = Globals.getGameDimensions().height / 2 - offsetTop;
+        brickHeight -= padding * rowCount;
+        brickHeight /= rowCount;
         for (let c = 0; c < this._colCount; c++) {
             this._bricks[c] = [];
             for (let r = 0; r < this._rowCount; r++) {
-                this._bricks[c][r] = new Brick(0,0, 1);
+                this._bricks[c][r] = new Brick(0,0, 1, brickWidth, brickHeight);
                 
             }
         }
-        console.info(this._bricks);
     }
 
     static dimensions(brick) {
@@ -131,6 +168,21 @@ class Bricks {
                 }
             }
         }
+    }
+
+    /**
+     * Resizes the bricks.
+     */
+    recalculateSize() {
+        console.info('Recalculating Size of Bricks');
+        // let brickWidth = Globals.getGameDimensions().width - this._offsetLeft;
+        // brickWidth -= (this._padding * this._colCount);
+        // brickWidth /= this._colCount;
+        this._bricks.flat().forEach(brick => {
+            //brick.width = brickWidth;
+            brick.rescale();
+        });
+
     }
 
     /**

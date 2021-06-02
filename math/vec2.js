@@ -108,4 +108,12 @@ export class Vec2 {
     distance(vector) {
         return Math.sqrt(Math.pow(vector.x - this.x, 2) + Math.pow(vector.y - this.y, 2));
     }
+
+    /**
+     * Clones the vector.
+     * @returns {Vec2} a clone of the vector.
+     */
+    clone() {
+        return new Vec2(this.x, this.y);
+    }
 } 
