@@ -85,6 +85,17 @@ class Brick {
         this._brickHeight = Number(value);
     }
 
+    /**
+     * Checks if the ball collides with the brick and damages the brick.
+     * @param {Ball} ball 
+     */
+    collidesWith(ball) {
+        if (ball.x > this._x && ball.x < this._x + this._brickWidth && ball.y > this._y && ball.y < this._y + this._brickHeight) {
+            ball.flipDy();
+            this.damage();
+        }
+    }
+
     damage(damageAmount=1) {
         this._status -= damageAmount;
     }
@@ -156,15 +167,11 @@ class Bricks {
     intersects(ball) {
         for (let c = 0; c < this._colCount; c++) {
             for (let r = 0; r < this._rowCount; r++) {
-                let b = this._bricks[c][r];
+                let brick = this._bricks[c][r];
                 // if brick isn't destroyed.
-                if (!b.isDestroyed()) {
+                if (!brick.isDestroyed()) {
                     // if center of ball to be inside brick the following must = true
-                    if (ball.x > b.x && ball.x < b.x + b.width && ball.y > b.y && ball.y < b.y + b.height) {
-                        ball.flipDy();
-                        b.damage();
-                        console.info({b});
-                    }
+                    brick.collidesWith(ball);
                 }
             }
         }
@@ -174,12 +181,7 @@ class Bricks {
      * Resizes the bricks.
      */
     recalculateSize() {
-        console.info('Recalculating Size of Bricks');
-        // let brickWidth = Globals.getGameDimensions().width - this._offsetLeft;
-        // brickWidth -= (this._padding * this._colCount);
-        // brickWidth /= this._colCount;
         this._bricks.flat().forEach(brick => {
-            //brick.width = brickWidth;
             brick.rescale();
         });
 
