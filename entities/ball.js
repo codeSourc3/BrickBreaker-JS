@@ -10,9 +10,24 @@ import {Vec2} from '../math/vec2.js';
  * Handles ball position, width and bouncing logic.
  */
 class Ball {
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} ballRadius 
+     */
 	constructor(x, y, ballRadius) {
+        /**
+         * @private
+         */
         this._pos = new Vec2(x, y);
+        /**
+         * @private
+         */
         this._delta = new Vec2(2, -2);
+        /**
+         * @private
+         */
         this._ballRadius = ballRadius;
     }
 
@@ -135,6 +150,19 @@ class Ball {
      */
     flipDy() {
         this._delta.y = -this._delta.y;
+    }
+
+    stop() {
+        this._delta.x = 0;
+        this._delta.y = 0;
+    }
+
+    reset() {
+        let canvas = Globals.getCanvasElement();
+        this._pos.x = canvas.width / 2;
+        this._pos.y = canvas.height - 30;
+        this._delta.x = 2;
+        this._delta.y = -2;
     }
 
     get radius() {

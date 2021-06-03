@@ -4,7 +4,7 @@
  */
 import {State} from './state.js';
 import {Globals} from '../game.js';
-import {Level1State} from './gamestate.js';
+import {Level1State} from './level1.js';
 import {centerText, Button} from '../ui/components.js';
 
 

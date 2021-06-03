@@ -2,7 +2,6 @@
  * @author Enzo Mayo
  * @since 12/09/2020
  */
-import { Globals } from "../game.js";
 
 class UIObject {
 	

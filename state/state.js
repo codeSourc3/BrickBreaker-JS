@@ -6,6 +6,10 @@
 
  class StateList {
      constructor() {
+         /**
+          * @type {State[]}
+          * @private
+          */
          this._states = [];
      }
 
@@ -99,6 +103,9 @@
 
  class StateStack {
      constructor() {
+         /**
+          * @private
+          */
          this._states = new StateList();
      }
 

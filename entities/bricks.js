@@ -33,7 +33,7 @@ class Brick {
     rescale() {
         let {x, y, width, height} = rescaleBox(this._normalized);
         this._normalized = normalizeBox(x, y, width, height);
-        console.info('Brick X: ', this._x, 'Brick Y: ', this._y);
+        //console.info('Brick X: ', this._x, 'Brick Y: ', this._y);
         this._x = x;
         this._y = y;
         this._brickWidth = width;
@@ -107,17 +107,59 @@ class Brick {
     
 }
 
+function buildBrickField(rowCount, colCount, brickWidth, brickHeight) {
+    const bricks = [];
+    for (let row = 0; row < rowCount; row++) {
+        let parsedRow = [];
+        for (let col = 0; col < colCount; col++) {
+            parsedRow.push(new Brick(0, 0, 1, brickWidth, brickHeight));
+        }
+        bricks.push(parsedRow);
+    }
+    console.log(bricks);
+    return bricks;
+}
+
+/**
+ * 
+ * @param {Array<Array<Number>>} levelData 
+ */
+function parseLevelData(levelData, brickWidth, brickHeight) {
+    const bricks = [];
+    for (let row = 0; row < levelData.length; row++) {
+        let parsedRow = [];
+        for (let col = 0; col < levelData[row].length; col++) {
+            let health = Number(levelData[row][col]);
+            parsedRow.push(new Brick(0, 0, health, brickWidth, brickHeight));
+        }
+        bricks.push(parsedRow);
+    }
+    console.log(bricks);
+    return bricks;
+}
+
 class Bricks {
     constructor(rowCount = 3, colCount = 5, padding = 10, offsetTop = 30, offsetLeft = 30) {
-        this._rowCount = rowCount;
-        this._colCount = colCount;
-        this._padding = padding;
-        this._offsetTop = offsetTop;
-        this._offsetLeft = offsetLeft;
         /**
-         * @type {Brick[][]}
+         * @private
          */
-        this._bricks = [];
+        this._rowCount = rowCount;
+        /**
+         * @private
+         */
+        this._colCount = colCount;
+        /**
+         * @private
+         */
+        this._padding = padding;
+        /**
+         * @private
+         */
+        this._offsetTop = offsetTop;
+        /**
+         * @private
+         */
+        this._offsetLeft = offsetLeft;
         let brickWidth = Globals.getGameDimensions().width - offsetLeft;
         brickWidth = brickWidth - (padding * colCount);
         brickWidth /= colCount;
@@ -126,13 +168,68 @@ class Bricks {
         let brickHeight = Globals.getGameDimensions().height / 2 - offsetTop;
         brickHeight -= padding * rowCount;
         brickHeight /= rowCount;
-        for (let c = 0; c < this._colCount; c++) {
-            this._bricks[c] = [];
-            for (let r = 0; r < this._rowCount; r++) {
-                this._bricks[c][r] = new Brick(0,0, 1, brickWidth, brickHeight);
-                
+        /**
+         * @private
+         */
+        this._bricks = buildBrickField(rowCount, colCount, brickWidth, brickHeight);
+    }
+
+    set colCount(value) {
+        this._colCount = Number(value);
+    }
+
+    set padding(value) {
+        this._padding = Number(value);
+    }
+
+    set rowCount(value) {
+        this._rowCount = Number(value);
+    }
+
+    set offsetTop(value) {
+        this._offsetTop = Number(value);
+    }
+
+    set offsetLeft(value) {
+        this._offsetLeft = Number(value);
+    }
+
+    /**
+     * @param {}
+     */
+    set bricks(value) {
+        if (Array.isArray(value)) {
+            if (value.every(subarray => Array.isArray(subarray))) {
+                this._bricks = value;
+                this._colCount = value[0].length;
+                this._rowCount = value.length;
             }
         }
+    }
+
+    /**
+     * Constructs a brick field from level data.
+     * @param {number[][]} levelData data representing the health of each brick.
+     */
+    static fromArray(levelData, padding = 10, offsetTop = 30, offsetLeft = 30) {
+        let rowCount = levelData.length;
+        let colCount = levelData[0].length;
+        console.log(`Rows: ${rowCount}, Columns: ${colCount}`);
+        let brickWidth = Globals.getGameDimensions().width - offsetLeft;
+        brickWidth = brickWidth - (padding * colCount);
+        brickWidth /= colCount;
+
+        let brickHeight = Globals.getGameDimensions().height / 2 - offsetTop;
+        brickHeight -= padding * rowCount;
+        brickHeight /= rowCount;
+        
+        let bricks = parseLevelData(levelData, brickWidth, brickHeight);
+        const field = new Bricks();
+        field.bricks = bricks;
+        field.colCount = bricks[0].length;
+        field.rowCount = bricks.length;
+        return field;
+
     }
 
     static dimensions(brick) {
@@ -143,16 +240,17 @@ class Bricks {
     }
 
     draw(ctx) {
-        
-        for (let c = 0; c < this._colCount; c++) {
-            for (let r = 0; r < this._rowCount; r++) {
-                if (!this._bricks[c][r].isDestroyed()) {
-                    let brickX = (c * (this._bricks[c][r].width + this._padding)) + this._offsetLeft;
-                    let brickY = (r * (this._bricks[c][r].height + this._padding)) + this._offsetTop;
-                    this._bricks[c][r].x = brickX;
-                    this._bricks[c][r].y = brickY;
+        console.log('Columns: ', this._colCount, ' Rows: ', this._rowCount);
+        for (let row = 0; row < this._rowCount; row++) {
+            for (let col = 0; col < this._colCount; col++) {
+                console.info(`C: ${col}, R: ${row}`);
+                if (!this._bricks[row][col].isDestroyed()) {
+                    let brickX = (col * (this._bricks[row][col].width + this._padding)) + this._offsetLeft;
+                    let brickY = (row * (this._bricks[row][col].height + this._padding)) + this._offsetTop;
+                    this._bricks[row][col].x = brickX;
+                    this._bricks[row][col].y = brickY;
                     //ctx.beginPath();
-                    this._bricks[c][r].draw(ctx);
+                    this._bricks[row][col].draw(ctx);
                     //ctx.closePath();
                 }
             }
@@ -165,8 +263,9 @@ class Bricks {
      * @param {Ball} ball the ball
      */
     intersects(ball) {
-        for (let c = 0; c < this._colCount; c++) {
-            for (let r = 0; r < this._rowCount; r++) {
+        for (let c = 0; c < this._rowCount; c++) {
+            for (let r = 0; r < this._colCount; r++) {
+                console.info(`C: ${c}, R: ${r}`);
                 let brick = this._bricks[c][r];
                 // if brick isn't destroyed.
                 if (!brick.isDestroyed()) {
