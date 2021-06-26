@@ -1,34 +1,35 @@
 class EventEmitter {
     constructor() {
+        /**
+         * @private
+         * @type {Map<string,Function[]>}
+         */
         this._inputs = new Map();
     }
 
     /**
      * 
-     * @param {string} event the name of the event.
+     * @param {string} eventName the name of the event.
      * @param {Function} func 
      */
-    on(event, func) {
-        if (this._inputs.has(event)) {
-            this._inputs.get(event).push(func);
+    subscribe(eventName, func) {
+        if (this._inputs.has(eventName)) {
+            this._inputs.get(eventName).push(func);
         } else {
-            this._inputs.set(event, [func]);
+            this._inputs.set(eventName, [func]);
         }
     }
 
     removeAll(eventName) {
         if (this._inputs.has(eventName)) {
-            this._inputs.set(eventName, []);
+            this._inputs.delete(eventName);
         }
     }
 
-    /**
-     * 
-     * @param {Event} event 
-     */
-    handleEvent(event) {
-        if (this._inputs.has(event.type)) {
-            this._inputs.get(event.type).forEach(f => f(event));
+    emit(eventName, ...args) {
+        if (this._inputs.has(eventName)) {
+            let funcs = this._inputs.get(eventName);
+            funcs.forEach(fn => fn(...args));
         }
     }
 }
