@@ -4,7 +4,7 @@
  */
 import { Bricks } from '../entities/bricks.js';
 import { Player } from '../entities/player.js';
-import { RunningGameState } from "./GameState.js";
+import { RunningGameState } from "./gamestate.js";
 import { levels } from './leveldata.js';
 
 class Level1State extends RunningGameState {
