@@ -3,15 +3,20 @@
  * @since 12/09/2020
  */
 import { Globals } from "../game.js";
+import { GameObject } from  './GameObject.js';
 
 /**
  * Handles ball width, height and responds to events
  */
-class Paddle {
+class Paddle extends GameObject {
 	/**
 	 * Paddle is fixed at its Y-axis
+     * @param {number} paddleX the position of the top-left corner on the x-axis.
+     * @param {number} paddleHeight the height of the paddle.
+     * @param {number} paddleWidth the width of the paddle.
 	 */
 	constructor(paddleX, paddleHeight, paddleWidth) {
+        super();
 		this._paddleX = paddleX;
 		this._paddleHeight = paddleHeight;
 		this._paddleWidth = paddleWidth;

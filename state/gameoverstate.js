@@ -14,8 +14,10 @@ export class GameOverState extends State {
 
     /**
       * Called before render. Updates the game state.
+      * 
+      * @param {number} elapsed the amount of time that elapsed since the last frame.
       */
-     update() {
+     updateState(elapsed) {
 
     }
 
@@ -23,7 +25,7 @@ export class GameOverState extends State {
      * Called after render. Draws the state to the screen.
      * @param {CanvasRenderingContext2D} ctx 
      */
-    render(ctx) {
+    renderState(ctx) {
         ctx.clearRect(0, 0, Globals.getCanvasElement().width, Globals.getCanvasElement().height)
         // Display 'Game Over' in center of screen
         ctx.save();

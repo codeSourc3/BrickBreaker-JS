@@ -29,7 +29,7 @@ class MainMenuState extends State {
     /**
       * Called before render. Updates the game state.
       */
-     update() {
+     updateState(elapsed) {
         // May resize any buttons.
 
     }
@@ -38,7 +38,7 @@ class MainMenuState extends State {
      * Called after render. Draws the state to the screen.
      * @param {CanvasRenderingContext2D} ctx the canvas rendering context.
      */
-    render(ctx) {
+    renderState(ctx) {
         let dimensions = Globals.getGameDimensions();
         ctx.clearRect(0,0, dimensions.width, dimensions.height);
         // back up original state before altering any further.

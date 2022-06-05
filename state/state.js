@@ -4,6 +4,8 @@
  * @since 12/09/2020
  */
 
+import { UnimplementedMethod } from "../errors/errors.js";
+
  class StateList {
      constructor() {
          /**
@@ -39,6 +41,7 @@
 
  /**
   * Base class that all States inherit from.
+  * @interface
   */
  class State {
      /**
@@ -58,17 +61,20 @@
 
      /**
       * Called before render. Updates the game state.
+      * 
+      * @param {number} elapsed the elapsed amount of time.
+      * 
       */
-     update() {
-
+     updateState(elapsed) {
+         throw new UnimplementedMethod(State, this.updateState);
      }
 
      /**
       * Called after render. Draws the state to the screen.
       * @param {CanvasRenderingContext2D} ctx the canvas context.
       */
-     render(ctx) {
-        //
+     renderState(ctx) {
+        throw new UnimplementedMethod(State, this.renderState);
      }
 
      /**
@@ -109,17 +115,21 @@
          this._states = new StateList();
      }
 
-     update() {
+     /**
+      * 
+      * @param {number} elapsed 
+      */
+     update(elapsed) {
          let state = this._states.top();
          if (state) {
-             state.update();
+             state.updateState(elapsed);
          }
      }
 
      render(ctx) {
          let state = this._states.top();
          if (state) {
-             state.render(ctx);
+             state.renderState(ctx);
          }
      }
 

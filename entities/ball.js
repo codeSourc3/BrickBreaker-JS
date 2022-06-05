@@ -1,5 +1,6 @@
 import { Globals } from '../game.js';
 import {Vec2} from '../math/vec2.js';
+import {GameObject} from './GameObject.js';
 
 /**
  * @author Enzo Mayo
@@ -9,14 +10,15 @@ import {Vec2} from '../math/vec2.js';
 /**
  * Handles ball position, width and bouncing logic.
  */
-class Ball {
+class Ball extends GameObject {
     /**
      * 
-     * @param {number} x 
-     * @param {number} y 
-     * @param {number} ballRadius 
+     * @param {number} x the position of the topmost point of the ball on the x-axis. 
+     * @param {number} y the position of the topmost point of the ball on the y-axis.
+     * @param {number} ballRadius the radius of the ball from the center of the ball.
      */
 	constructor(x, y, ballRadius) {
+        super();
         /**
          * @private
          */
@@ -92,7 +94,8 @@ class Ball {
         }
     }
 
-    update() {
+    
+    update(elapsed) {
         const {width} = Globals.getGameDimensions();
         if (this._pos.x + this._delta.x > width - this._ballRadius || this._pos.x + this._delta.x < this._ballRadius) {
             this._delta.x = -this._delta.x;

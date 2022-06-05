@@ -6,12 +6,22 @@
 import { Globals } from "../game.js";
 import { normalizeBox, rescaleBox } from "../math/sizing.js";
 import { Ball } from "./ball.js";
+import { GameObject } from './GameObject.js';
 
 /**
  * 
  */
-class Brick {
+class Brick extends GameObject {
+    /**
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} status 
+     * @param {number} brickWidth 
+     * @param {number} brickHeight 
+     */
     constructor(x, y, status, brickWidth = 75, brickHeight = 20) {
+        super();
         this._x = x;
         this._y = y;
         this._brickWidth = brickWidth;
@@ -23,15 +33,21 @@ class Brick {
 
 
     draw(ctx) {
+        if (this.isDestroyed()) return;
         ctx.save();
         ctx.rect(this._x, this._y, this._brickWidth, this._brickHeight);
         ctx.fillStyle = '#0095DD';
         ctx.fill();
         ctx.restore();
+
+    }
+
+    update(elapsed) {
+        //
     }
 
     rescale() {
-        let {x, y, width, height} = rescaleBox(this._normalized);
+        let { x, y, width, height } = rescaleBox(this._normalized);
         this._normalized = normalizeBox(x, y, width, height);
         //console.info('Brick X: ', this._x, 'Brick Y: ', this._y);
         this._x = x;
@@ -96,7 +112,7 @@ class Brick {
         }
     }
 
-    damage(damageAmount=1) {
+    damage(damageAmount = 1) {
         this._status -= damageAmount;
     }
 
@@ -104,9 +120,17 @@ class Brick {
         return this._status <= 0;
     }
 
-    
+
 }
 
+/**
+ * 
+ * @param {number} rowCount 
+ * @param {number} colCount 
+ * @param {number} brickWidth 
+ * @param {number} brickHeight 
+ * @returns {Brick[][]}
+ */
 function buildBrickField(rowCount, colCount, brickWidth, brickHeight) {
     const bricks = [];
     for (let row = 0; row < rowCount; row++) {
@@ -123,6 +147,7 @@ function buildBrickField(rowCount, colCount, brickWidth, brickHeight) {
 /**
  * 
  * @param {Array<Array<Number>>} levelData 
+ * @returns {Brick[][]}
  */
 function parseLevelData(levelData, brickWidth, brickHeight) {
     const bricks = [];
@@ -138,8 +163,9 @@ function parseLevelData(levelData, brickWidth, brickHeight) {
     return bricks;
 }
 
-class Bricks {
+class Bricks extends GameObject {
     constructor(rowCount = 3, colCount = 5, padding = 10, offsetTop = 30, offsetLeft = 30) {
+        super();
         /**
          * @private
          */
@@ -195,7 +221,7 @@ class Bricks {
     }
 
     /**
-     * @param {}
+     * @param {Brick[][]}
      */
     set bricks(value) {
         if (Array.isArray(value)) {
@@ -210,6 +236,7 @@ class Bricks {
     /**
      * Constructs a brick field from level data.
      * @param {number[][]} levelData data representing the health of each brick.
+     * @returns {Bricks}
      */
     static fromArray(levelData, padding = 10, offsetTop = 30, offsetLeft = 30) {
         let rowCount = levelData.length;
@@ -222,7 +249,7 @@ class Bricks {
         let brickHeight = Globals.getGameDimensions().height / 2 - offsetTop;
         brickHeight -= padding * rowCount;
         brickHeight /= rowCount;
-        
+
         let bricks = parseLevelData(levelData, brickWidth, brickHeight);
         const field = new Bricks();
         field.bricks = bricks;
@@ -232,6 +259,11 @@ class Bricks {
 
     }
 
+    /**
+     * 
+     * @param {Brick} brick 
+     * @returns {{width: number, height: number}}
+     */
     static dimensions(brick) {
         return {
             width: brick.width,
@@ -244,23 +276,24 @@ class Bricks {
         for (let row = 0; row < this._rowCount; row++) {
             for (let col = 0; col < this._colCount; col++) {
                 console.info(`C: ${col}, R: ${row}`);
-                if (!this._bricks[row][col].isDestroyed()) {
-                    let brickX = (col * (this._bricks[row][col].width + this._padding)) + this._offsetLeft;
-                    let brickY = (row * (this._bricks[row][col].height + this._padding)) + this._offsetTop;
-                    this._bricks[row][col].x = brickX;
-                    this._bricks[row][col].y = brickY;
-                    //ctx.beginPath();
-                    this._bricks[row][col].draw(ctx);
-                    //ctx.closePath();
-                }
+
+                let brickX = (col * (this._bricks[row][col].width + this._padding)) + this._offsetLeft;
+                let brickY = (row * (this._bricks[row][col].height + this._padding)) + this._offsetTop;
+                this._bricks[row][col].x = brickX;
+                this._bricks[row][col].y = brickY;
+                //ctx.beginPath();
+                this._bricks[row][col].draw(ctx);
+                //ctx.closePath();
+
             }
         }
-        
+
     }
 
     /**
      * 
      * @param {Ball} ball the ball
+     * @returns {boolean}
      */
     intersects(ball) {
         for (let c = 0; c < this._rowCount; c++) {
@@ -293,11 +326,11 @@ class Bricks {
     allBricksDestroyed() {
         // return true if all bricks are destroyed
         let allDestroyed = this._bricks.flat().every(b => b._status === 0);
-        
+
         //console.info('All bricks destroyed', this._bricks.flat().every(b => b.isDestroyed()));
         return allDestroyed;
     }
-    
+
 
 }
-export {Brick, Bricks};
+export { Brick, Bricks };

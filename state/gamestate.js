@@ -10,6 +10,7 @@ import { Bricks } from '../entities/bricks.js';
 import { WinGameState } from "./WinGameState.js";
 import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
+import { GameObject } from "../entities/GameObject.js";
 
 /**
  * Base class for all levels.
@@ -77,8 +78,10 @@ export class RunningGameState extends State {
 
     /**
       * Called before render. Updates the game state.
+      * 
+      * @param {number} elapsed the elapsed amount of time since the last frame.
       */
-    update() {
+    updateState(elapsed) {
 
         let canvas = Globals.getCanvasElement();
         
@@ -106,7 +109,7 @@ export class RunningGameState extends State {
         }
 
         // Apply movement
-        this._ball.update();
+        this._ball.update(elapsed);
     }
 
     nextLevel() {
@@ -117,7 +120,7 @@ export class RunningGameState extends State {
      * Called after render. Draws the state to the screen.
      * @param {CanvasRenderingContext2D} ctx the canvas rendering context.
      */
-    render(ctx) {
+    renderState(ctx) {
         ctx.clearRect(0, 0, Globals.getCanvasElement().width, Globals.getCanvasElement().height);
         // Draw player info
         this._player.draw(ctx);

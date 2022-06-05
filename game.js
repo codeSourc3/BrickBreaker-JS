@@ -24,11 +24,11 @@ const Game = {
 		 */
     _canvasHeight : 240,
     /**
-     * 
+     * @type {HTMLCanvasElement}
 		 */
     _canvas : null,
     /**
-     * 
+     * @type {CanvasRenderingContext2D}
 		 */
     _context : null,
     /**
