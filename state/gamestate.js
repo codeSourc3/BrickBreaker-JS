@@ -19,7 +19,7 @@ import { GameObject } from "../entities/GameObject.js";
 export class RunningGameState extends State {
     /**
      * Constructs a level state.
-     * @param {Player} player the current player.
+     * @param {import('../entities/player.js').Player} player the current player.
      * @param {Bricks} bricks the bricks object.
      * @param {string} title the title of the level
      */
@@ -85,7 +85,11 @@ export class RunningGameState extends State {
 
         let canvas = Globals.getCanvasElement();
         
-        this._bricks.intersects(this._ball);
+        this._bricks.intersects(this._ball, brick => {
+            brick.damage();
+            this._ball.flipDy();
+            this._player.increaseScore();
+        });
         if (this._bricks.allBricksDestroyed()) {
             console.info('All bricks destroyed');
             this.onWin();

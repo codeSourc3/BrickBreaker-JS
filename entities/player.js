@@ -27,7 +27,7 @@ class Player {
         }
     }
 
-    increaseScore(amnt) {
+    increaseScore(amnt = 1) {
         if (amnt > 0) {
             this._score += amnt;
         }

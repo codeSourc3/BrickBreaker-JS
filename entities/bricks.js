@@ -102,14 +102,12 @@ class Brick extends GameObject {
     }
 
     /**
-     * Checks if the ball collides with the brick and damages the brick.
+     * Checks if the ball collides with the brick.
      * @param {Ball} ball 
+     * @returns {boolean}
      */
     collidesWith(ball) {
-        if (ball.x > this._x && ball.x < this._x + this._brickWidth && ball.y > this._y && ball.y < this._y + this._brickHeight) {
-            ball.flipDy();
-            this.damage();
-        }
+        return (ball.x > this._x && ball.x < this._x + this._brickWidth && ball.y > this._y && ball.y < this._y + this._brickHeight);
     }
 
     damage(damageAmount = 1) {
@@ -140,7 +138,7 @@ function buildBrickField(rowCount, colCount, brickWidth, brickHeight) {
         }
         bricks.push(parsedRow);
     }
-    console.log(bricks);
+    console.assert(bricks.length > 0, 'Problem building brick field');
     return bricks;
 }
 
@@ -159,7 +157,7 @@ function parseLevelData(levelData, brickWidth, brickHeight) {
         }
         bricks.push(parsedRow);
     }
-    console.log(bricks);
+    console.assert(bricks.length > 0, 'Problem parsing level data');
     return bricks;
 }
 
@@ -189,7 +187,6 @@ class Bricks extends GameObject {
         let brickWidth = Globals.getGameDimensions().width - offsetLeft;
         brickWidth = brickWidth - (padding * colCount);
         brickWidth /= colCount;
-        console.log('Calculated width: ', brickWidth);
 
         let brickHeight = Globals.getGameDimensions().height / 2 - offsetTop;
         brickHeight -= padding * rowCount;
@@ -241,7 +238,7 @@ class Bricks extends GameObject {
     static fromArray(levelData, padding = 10, offsetTop = 30, offsetLeft = 30) {
         let rowCount = levelData.length;
         let colCount = levelData[0].length;
-        console.log(`Rows: ${rowCount}, Columns: ${colCount}`);
+        
         let brickWidth = Globals.getGameDimensions().width - offsetLeft;
         brickWidth = brickWidth - (padding * colCount);
         brickWidth /= colCount;
@@ -275,7 +272,7 @@ class Bricks extends GameObject {
         console.log('Columns: ', this._colCount, ' Rows: ', this._rowCount);
         for (let row = 0; row < this._rowCount; row++) {
             for (let col = 0; col < this._colCount; col++) {
-                console.info(`C: ${col}, R: ${row}`);
+                
 
                 let brickX = (col * (this._bricks[row][col].width + this._padding)) + this._offsetLeft;
                 let brickY = (row * (this._bricks[row][col].height + this._padding)) + this._offsetTop;
@@ -293,9 +290,9 @@ class Bricks extends GameObject {
     /**
      * 
      * @param {Ball} ball the ball
-     * @returns {boolean}
+     * @param {(brick:Brick) => void} callback
      */
-    intersects(ball) {
+    intersects(ball, callback) {
         for (let c = 0; c < this._rowCount; c++) {
             for (let r = 0; r < this._colCount; r++) {
                 console.info(`C: ${c}, R: ${r}`);
@@ -303,7 +300,9 @@ class Bricks extends GameObject {
                 // if brick isn't destroyed.
                 if (!brick.isDestroyed()) {
                     // if center of ball to be inside brick the following must = true
-                    brick.collidesWith(ball);
+                    if (brick.collidesWith(ball)) {
+                        callback(brick);
+                    }
                 }
             }
         }
