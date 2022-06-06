@@ -21,4 +21,5 @@ instructions.addEventListener('click', (e) => {
     
 });
 
-Game.init('game');
+const game = new Game();
+game.startGame();
