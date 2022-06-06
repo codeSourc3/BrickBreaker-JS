@@ -139,7 +139,7 @@ class Game  {
     /**
      * 
      */
-    update() {
+    update(elapsed) {
         
         if (this._canvas.width !== document.documentElement.offsetWidth ) {
             this.resize();
