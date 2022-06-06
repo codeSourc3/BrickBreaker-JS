@@ -15,7 +15,7 @@ export class WinGameState extends State {
      * 
      * @param {CanvasRenderingContext2D} ctx the canvas context.
      */
-    render(ctx) {
+    renderState(ctx) {
         const game = Globals.getGameDimensions();
         ctx.clearRect(0, 0, game.width, game.height);
         // Display 'Game Over' in center of screen
@@ -24,6 +24,10 @@ export class WinGameState extends State {
         ctx.font = `${fontSize} monospace`;
         centerText(ctx, Globals.getGameDimensions().height / 2, 'You Win!');
         ctx.restore();
+    }
+
+    updateState(elapsed) {
+        // do nothing.
     }
 
 

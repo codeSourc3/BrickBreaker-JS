@@ -214,7 +214,7 @@ export class RunningGameState extends State {
      * going to the next level when we want.
      */
     onWin() {
-        if (this._currentLevel > this._maxLevels) {
+        if (this._currentLevel + 1 >= this._maxLevels) {
             // all levels won
             console.info('All levels won');
             this.onExit();

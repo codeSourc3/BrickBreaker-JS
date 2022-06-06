@@ -236,6 +236,7 @@ class Bricks extends GameObject {
      * @returns {Bricks}
      */
     static fromArray(levelData, padding = 10, offsetTop = 30, offsetLeft = 30) {
+        console.assert(Array.isArray(levelData), 'Level data is not an array');
         let rowCount = levelData.length;
         let colCount = levelData[0].length;
         
