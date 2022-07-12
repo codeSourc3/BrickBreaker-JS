@@ -142,6 +142,14 @@ class Ball extends GameObject {
     }
 
     /**
+     * Gets the center of the ball
+     * @return {Vec2} a {@link Vec2} representing the center of the ball.
+     */
+    get center() {
+        return new Vec2(this.x, this.y);
+    }
+
+    /**
      * Flips the sign of the delta X (the change in distance on the X-axis).
      */
     flipDx() {

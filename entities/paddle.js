@@ -3,6 +3,7 @@
  * @since 12/09/2020
  */
 import { Globals } from "../game.js";
+import { Vec2 } from "../math/vec2.js";
 import { GameObject } from  './GameObject.js';
 
 /**
@@ -71,6 +72,21 @@ class Paddle extends GameObject {
 
     get height() {
         return this._paddleHeight;
+    }
+
+    get halfWidth() {
+        return this._paddleWidth / 2;
+    }
+
+    get halfHeight() {
+        return this._paddleHeight / 2;
+    }
+
+    /**
+     * @return {Vec2} representing the center point of the rectangle.
+     */
+    get center() {
+        return new Vec2(this.halfWidth, this.halfHeight);
     }
 
 

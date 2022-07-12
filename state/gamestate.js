@@ -100,7 +100,7 @@ export class RunningGameState extends State {
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
             if (isCircleCollidingWithRect(this._ball, this._paddle)) {
-                this._ball.dy = -this._ball.dy;
+                this._ball.flipDy();
             } else {
                 this._player.decrementLife();
                 if (this._player.lives == 0) {
