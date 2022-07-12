@@ -11,6 +11,7 @@ import { WinGameState } from "./WinGameState.js";
 import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
 import { GameObject } from "../entities/GameObject.js";
+import { isCircleCollidingWithRect } from "../math/collisions.js";
 
 /**
  * Base class for all levels.
@@ -98,7 +99,7 @@ export class RunningGameState extends State {
         this._bricks.recalculateSize();
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
-            if (this._ball.x > this._paddle.paddleX && this._ball.x < this._paddle.paddleX + this._paddle.paddleWidth) {
+            if (isCircleCollidingWithRect(this._ball, this._paddle)) {
                 this._ball.dy = -this._ball.dy;
             } else {
                 this._player.decrementLife();

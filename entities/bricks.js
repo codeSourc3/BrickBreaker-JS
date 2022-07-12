@@ -4,6 +4,7 @@
  */
 
 import { Globals } from "../game.js";
+import { isCircleCollidingWithRect } from "../math/collisions.js";
 import { normalizeBox, rescaleBox } from "../math/sizing.js";
 import { Ball } from "./ball.js";
 import { GameObject } from './GameObject.js';
@@ -107,7 +108,8 @@ class Brick extends GameObject {
      * @returns {boolean}
      */
     collidesWith(ball) {
-        return (ball.x > this._x && ball.x < this._x + this._brickWidth && ball.y > this._y && ball.y < this._y + this._brickHeight);
+        // Solution found at https://stackoverflow.com/questions/21089959/detecting-collision-of-rectangle-with-circle
+        return isCircleCollidingWithRect(ball, this);
     }
 
     damage(damageAmount = 1) {

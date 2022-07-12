@@ -22,14 +22,16 @@ class Paddle extends GameObject {
 		this._paddleWidth = paddleWidth;
 		this._rightPressed = false;
 		this._leftPressed = false;
+        this._paddleY = 0;
 	}
 	
 	draw(context) {
         context.save();
 		context.beginPath();
+        this._paddleY = context.canvas.height - this._paddleHeight;
 		context.rect(
 			this._paddleX,
-			context.canvas.height - this._paddleHeight,
+			this._paddleY,
 			this._paddleWidth,
 			this._paddleHeight);
 		context.fillStyle = '#0095DD';
@@ -54,6 +56,23 @@ class Paddle extends GameObject {
     get paddleX() {
         return this._paddleX;
     }
+
+    get x() {
+        return this.paddleX;
+    }
+
+    get y() {
+        return this._paddleY;
+    }
+
+    get width() {
+        return this._paddleWidth;
+    }
+
+    get height() {
+        return this._paddleHeight;
+    }
+
 
     get paddleWidth() {
         return this._paddleWidth;
