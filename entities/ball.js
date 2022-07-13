@@ -26,7 +26,7 @@ class Ball extends GameObject {
         /**
          * @private
          */
-        this._delta = new Vec2(2, -2);
+        this._delta = new Vec2(3, -3);
         /**
          * @private
          */
@@ -109,6 +109,14 @@ class Ball extends GameObject {
         this._pos.y += this._delta.y;
     }
 
+    /**
+     * @return {number} the heading in degrees.
+     */
+    get heading() {
+        let radians = Math.atan2(this.vy, this.vx);
+        return 180 * radians / Math.PI;
+    }
+
     get x() {
         return this._pos.x;
     }
@@ -139,6 +147,18 @@ class Ball extends GameObject {
 
     set dx(num) {
         this._delta.x = num;
+    }
+
+    /**
+     * Gets the center of the ball
+     * @return {Vec2} a {@link Vec2} representing the center of the ball.
+     */
+    get center() {
+        return new Vec2(this.x, this.y);
+    }
+
+    get delta() {
+        return this._delta;
     }
 
     /**

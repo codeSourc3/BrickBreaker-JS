@@ -11,7 +11,7 @@ import { WinGameState } from "./WinGameState.js";
 import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
 import { GameObject } from "../entities/GameObject.js";
-import { isCircleCollidingWithRect } from "../math/collisions.js";
+import { bounceOffPaddle, isCircleCollidingWithRect } from "../math/collisions.js";
 
 /**
  * Base class for all levels.
@@ -100,7 +100,8 @@ export class RunningGameState extends State {
         // Do collision detecton
         if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
             if (isCircleCollidingWithRect(this._ball, this._paddle)) {
-                this._ball.dy = -this._ball.dy;
+                bounceOffPaddle(this._ball, this._paddle);
+                 
             } else {
                 this._player.decrementLife();
                 if (this._player.lives == 0) {
@@ -115,6 +116,7 @@ export class RunningGameState extends State {
 
         // Apply movement
         this._ball.update(elapsed);
+        this._paddle.update(elapsed);
     }
 
     nextLevel() {

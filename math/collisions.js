@@ -15,3 +15,20 @@ export function isCircleCollidingWithRect({ x: circleX, y: circleY, radius }, { 
     const dy = distY - recHeight / 2;
     return (dx * dx + dy * dy <= (radius * radius));
 }
+
+/**
+ * 
+ * @param {import('../entities/ball.js').Ball} ball 
+ * @param {import('../entities/paddle.js').Paddle} paddle 
+ */
+export function bounceOffPaddle(ball, paddle) {
+    ball.flipDy();
+    let hitPos = ball.x - paddle.centerX;
+    ball.dx += hitPos / 7.5;
+    const maxVelX = 6;
+    if (ball.dx > maxVelX) {
+        ball.dx = maxVelX;
+    } else if (ball.dx < -maxVelX) {
+        ball.dx = -maxVelX;
+    }
+}
