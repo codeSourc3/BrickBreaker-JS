@@ -86,7 +86,14 @@ class Paddle extends GameObject {
      * @return {Vec2} representing the center point of the rectangle.
      */
     get center() {
-        return new Vec2(this.halfWidth, this.halfHeight);
+        return new Vec2(this.centerX, this.centerY);
+    }
+    get centerX() {
+        return this.x + this.halfWidth;
+    }
+
+    get centerY() {
+        return this.y + this.halfHeight;
     }
 
 
