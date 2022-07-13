@@ -115,6 +115,7 @@ export class RunningGameState extends State {
 
         // Apply movement
         this._ball.update(elapsed);
+        this._paddle.update(elapsed);
     }
 
     nextLevel() {

@@ -6,8 +6,10 @@ import { Globals } from "../game.js";
 import { Vec2 } from "../math/vec2.js";
 import { GameObject } from  './GameObject.js';
 
+const PADDLE_MOVEMENT_SPEED = 7;
+
 /**
- * Handles ball width, height and responds to events
+ * Handles paddle width, height and responds to events
  */
 class Paddle extends GameObject {
 	/**
@@ -23,9 +25,33 @@ class Paddle extends GameObject {
 		this._paddleWidth = paddleWidth;
 		this._rightPressed = false;
 		this._leftPressed = false;
+        this._delta = new Vec2(0, 0);
         this._paddleY = 0;
+        this._isUsingPointer = false;
 	}
 	
+    update(elapsed) {
+        const {width, height} = Globals.getGameDimensions();
+        
+        if (this.right + this._delta.x > width) {
+            this.x = width - this.width;
+            // hit the right side of the display.
+            this._delta.x = 0;
+        }
+        if (this.left < 0) {
+            this.x = 0;
+            this._delta.x =  0;
+        }
+        
+        this._paddleX += this._delta.x;
+        if (this._isUsingPointer) this._delta.x = 0;
+        this.lastUpdated = performance.now();
+    }
+
+    /**
+     * 
+     * @param {CanvasRenderingContext2D} context 
+     */
 	draw(context) {
         context.save();
 		context.beginPath();
@@ -39,19 +65,13 @@ class Paddle extends GameObject {
 		context.fill();
         context.closePath();
         context.restore();
-        
-        if(this._rightPressed) {
-            this._paddleX += 7;
-            if (this._paddleX + this._paddleWidth > context.canvas.width){
-                this._paddleX = context.canvas.width - this._paddleWidth;
-            }
-        }
-        else if(this._leftPressed) {
-            this._paddleX -= 7;
-            if (this._paddleX < 0){
-                this._paddleX = 0;
-            }
-        }
+
+        context.beginPath();
+        context.moveTo(this.centerX, this.centerY);
+        context.lineTo(this.centerX + this._delta.x * 5, this.centerY + this._delta.y * 5);
+        context.strokeStyle = 'black';
+        context.stroke();
+        context.closePath();
     }
     
     get paddleX() {
@@ -96,6 +116,27 @@ class Paddle extends GameObject {
         return this.y + this.halfHeight;
     }
 
+    get top() {
+        return this.y;
+    }
+
+    get bottom() {
+        return this.y + this.height;
+    }
+
+    get right() {
+        return this.x + this.width;
+    }
+
+    set x(value) {
+        this.paddleX = value;
+    }
+
+
+    get left() {
+        return this.x;
+    }
+
 
     get paddleWidth() {
         return this._paddleWidth;
@@ -134,9 +175,11 @@ class Paddle extends GameObject {
    _onKeyDown(evt) {
        if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a' ) {
             this._leftPressed = true;
+            this._delta.x = -PADDLE_MOVEMENT_SPEED;
             evt.preventDefault();
         } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
             this._rightPressed = true;
+            this._delta.x = PADDLE_MOVEMENT_SPEED;
             evt.preventDefault();
         }
    }
@@ -144,23 +187,24 @@ class Paddle extends GameObject {
    _onKeyUp(evt) {
         if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a') {
             this._leftPressed = false;
+            this._delta.x = 0;
             evt.preventDefault();
         } else if (evt.key === 'ArrowRight' || evt.key === 'Right' || evt.key === 'd') {
             this._rightPressed = false;
+            this._delta.x = 0;
             evt.preventDefault();
         }
    }
 
+   /**
+    * This does not update the velocity of the paddle.
+    * @param {PointerEvent} evt 
+    */
    _onPointerMove(evt) {
         let relativeX = evt.clientX - Globals.getCanvasElement().offsetLeft;
         if (relativeX > 0 && relativeX < Globals.getCanvasElement().width) {
-            this._paddleX = relativeX - this._paddleWidth / 2;
-            if (this._paddleX < 0) {
-                this._paddleX = 0;
-            }
-            if (this._paddleX + this._paddleWidth > Globals.getGameDimensions().width) {
-                this._paddleX = Globals.getGameDimensions().width - this._paddleWidth;
-            }
+            let newPosition = relativeX - this.halfWidth;
+            this.x = newPosition;
         }
    }
 
