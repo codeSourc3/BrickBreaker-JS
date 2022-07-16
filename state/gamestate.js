@@ -5,12 +5,11 @@
 import { State } from "./state.js";
 import { Paddle } from '../entities/paddle.js';
 import { Ball } from '../entities/ball.js';
-import { Globals } from '../game.js';
+import { Game, Globals } from '../game.js';
 import { Bricks } from '../entities/bricks.js';
 import { WinGameState } from "./WinGameState.js";
 import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
-import { GameObject } from "../entities/GameObject.js";
 import { bounceOffPaddle, isCircleCollidingWithRect } from "../math/collisions.js";
 
 /**
@@ -21,11 +20,12 @@ export class RunningGameState extends State {
     /**
      * Constructs a level state.
      * @param {import('../entities/player.js').Player} player the current player.
+     * @param {Game} game the game instance for interacting with subsystems.
      * @param {Bricks} bricks the bricks object.
      * @param {string} title the title of the level
      */
-    constructor(player, bricks, title = 'Level ???') {
-        super(title);
+    constructor(player, game, bricks, title = 'Level ???') {
+        super(title, game);
         /**
          * @private
          */
@@ -66,6 +66,9 @@ export class RunningGameState extends State {
          * @private
          */
         this._isPaused = false;
+
+        this._pauseHandler = this._pauseHandler.bind(this);
+
         /**
          * @private
          */
@@ -106,7 +109,7 @@ export class RunningGameState extends State {
                 this._player.decrementLife();
                 if (this._player.lives == 0) {
                     this.onExit();
-                    Globals.getGameInstance().push(new GameOverState());
+                    Globals.getGameInstance().push(new GameOverState(this.game));
                 } else {
                     this._ball.reset();
                     this._paddle.paddleX = (canvas.width - this._paddle.paddleWidth) / 2;
@@ -146,10 +149,14 @@ export class RunningGameState extends State {
     _pauseHandler(ev) {
         if (ev.type === 'keypress' && ev.key === 'p') {
             if (this._isPaused) {
-                Globals.resumeGame();
+                //FIXME #7 Remove reference to game object and pass in event system instead.
+                this.game.resumeGame();
+                console.assert(typeof this.game !== 'undefined');
                 this._isPaused = false;
             } else {
-                Globals.pauseGame();
+                this.game.pauseGame();
+                console.assert(typeof this.game !== 'undefined');
+                console.assert(this.game instanceof Game)
                 this._isPaused = true;
             }
         }
@@ -221,7 +228,7 @@ export class RunningGameState extends State {
             // all levels won
             console.info('All levels won');
             this.onExit();
-            Globals.getGameInstance().push(new WinGameState());
+            Globals.getGameInstance().push(new WinGameState(this.game));
         } else {
             // next level
             console.info('Next level');

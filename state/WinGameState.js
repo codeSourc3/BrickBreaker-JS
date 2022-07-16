@@ -7,8 +7,12 @@ import { State } from "./state.js";
 import {centerText} from '../ui/components.js';
 
 export class WinGameState extends State {
-    constructor() {
-        super('YouWin');
+    /**
+     * 
+     * @param {import('../game.js').Game} game 
+     */
+    constructor(game) {
+        super('YouWin', game);
     }
 
     /**

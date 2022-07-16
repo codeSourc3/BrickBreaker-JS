@@ -7,8 +7,12 @@ import {centerText} from '../ui/components.js';
 import {Globals} from '../game.js';
 
 export class GameOverState extends State {
-    constructor() {
-        super('GameOver');
+    /**
+     * 
+     * @param {import('../game.js').Game} game 
+     */
+    constructor(game) {
+        super('GameOver', game);
 
     }
 

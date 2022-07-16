@@ -11,8 +11,12 @@ import {centerText, Button} from '../ui/components.js';
 
 
 class MainMenuState extends State {
-    constructor() {
-        super("Main Menu");
+    /**
+     * 
+     * @param {import('../game.js').Game} game 
+     */
+    constructor(game) {
+        super("Main Menu", game);
         this.title = 'Brick Breaker JS';
         /**
          * @type {Button[]}
@@ -71,7 +75,7 @@ class MainMenuState extends State {
             Globals.getCanvasElement().height / 8);
         startBtn.setHandler(() => {
             this.onExit();
-            Globals.getGameInstance().push(new Level1State());
+            Globals.getGameInstance().push(new Level1State(this.game));
         });
         startBtn.handler.bind(this);
         this.buttons.push(startBtn);

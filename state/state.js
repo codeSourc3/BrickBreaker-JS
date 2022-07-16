@@ -5,6 +5,7 @@
  */
 
 import { UnimplementedMethod } from "../errors/errors.js";
+import { Game } from "../game.js";
 
  class StateList {
      constructor() {
@@ -46,17 +47,26 @@ import { UnimplementedMethod } from "../errors/errors.js";
  class State {
      /**
       * 
-      * @param {string} name 
+      * @param {string} name the name of the state
+      * @param {Game} game the game instance of the state
       */
-     constructor(name) {
+     constructor(name, game) {
          /**
           * @private
           */
          this._name = name;
+         /**
+          * @private
+          */
+         this._game = game;
      }
 
      get name() {
          return this._name;
+     }
+
+     get game() {
+        return this._game;
      }
 
      /**

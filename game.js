@@ -7,6 +7,7 @@ import {State, StateStack} from './state/state.js';
 //import { Level1State } from "./state/gamestate.js";
 import { MainMenuState } from "./state/mainmenustate.js";
 import { Key } from './input/keyboard.js';
+import {PubSub} from './eventemitter.js';
 
 let globals;
 
@@ -45,6 +46,15 @@ class Game  {
     _ratio = 0;
 
     _paused = false;
+
+    events = new PubSub();
+
+    static Events = Object.freeze({
+        PAUSE: 'pause-game',
+        RESUME: 'resume-game',
+        CHANGE_STATE: 'change-state',
+        START: 'start-game'
+    });
     
     constructor({canvasElement=document.querySelector('canvas')}={}) {
         this._canvas = canvasElement;
@@ -59,7 +69,7 @@ class Game  {
                 this[prop] = this[prop].bind(this);
             });
         };
-        bindAllToSelf('resize', 'update', 'startGame', 'pauseGame', 'resumeGame');
+        bindAllToSelf('resize', 'update', 'startGame', 'pauseGame', 'resumeGame', 'onStateChange');
         const self = this;
         globals = {
             /**
@@ -89,7 +99,6 @@ class Game  {
              * animation frame.
              */
             pauseGame() {
-                self._gameMode.pause();
                 self.pauseGame();
             },
             
@@ -98,7 +107,6 @@ class Game  {
              */
             resumeGame() {
                 self.resumeGame();
-                self._gameMode.resume();
             },
             changeTo(state) {
                 self._gameMode.pop();
@@ -117,9 +125,20 @@ class Game  {
                 document.getElementById('output').textContent = errorContent;
             }
         };
-
+        this.events.subscribe(Game.Events.START, this.startGame);
+        this.events.subscribe(Game.Events.PAUSE, this.pauseGame);
+        this.events.subscribe(Game.Events.RESUME, this.resumeGame);
+        this.events.subscribe(Game.Events.CHANGE_STATE, this.onStateChange);
     }
 
+    /**
+     * 
+     * @param {State} state 
+     */
+    onStateChange(state) {
+        this._gameMode.pop();
+        this._gameMode.push(state);
+    }
 
     
 
@@ -145,7 +164,7 @@ class Game  {
             this.resize();
         }
         if (!this._paused) {
-            this._gameMode.update();
+            this._gameMode.update(elapsed);
         }
         this._gameMode.render(this._context);
         
@@ -157,7 +176,7 @@ class Game  {
      * 
      */
     startGame() {
-        this._gameMode.push(new MainMenuState());
+        this._gameMode.push(new MainMenuState(this));
         this.update();
     }
 
@@ -167,6 +186,7 @@ class Game  {
     pauseGame() {
         //Game._frameId = window.cancelAnimationFrame(Game._frameId);
         this._paused = true;
+        this._gameMode.pause();
     }
 
     /**
@@ -175,17 +195,11 @@ class Game  {
     resumeGame() {
         //Game._frameId = window.requestAnimationFrame(Game.update);
         this._paused = false;
+        this._gameMode.resume();
     }
 
     
 }
-
-/**
- * Settings object
- */
-Game.Settings = {
-
-};
 
 
 
