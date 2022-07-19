@@ -8,7 +8,6 @@ import {Globals} from '../game.js';
  */
 export function normalizePoint(x, y) {
     let {width: canvasWidth, height: canvasHeight} = Globals.getGameDimensions();
-    console.info(`X: ${x}, Y: ${y}`);
     let normalizedX = x / canvasWidth;
     let normalizedY = y / canvasHeight;
     //console.info(`Normalized X: ${normalizedX}, Normalized Y: ${normalizedY}`);
@@ -19,7 +18,6 @@ export function normalizePoint(x, y) {
 }
 
 export function normalizeBox(x, y, width, height) {
-    console.info(`Original X: ${x}, Y: ${y}, Width: ${width}, Height: ${height}`);
     let {width: canvasWidth, height: canvasHeight} = Globals.getGameDimensions();
     let normalizedX = x / canvasWidth;
     let normalizedY = y / canvasHeight;

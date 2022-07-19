@@ -53,7 +53,12 @@ class Game  {
         PAUSE: 'pause-game',
         RESUME: 'resume-game',
         CHANGE_STATE: 'change-state',
-        START: 'start-game'
+        START: 'start-game',
+        RESCALE: 'rescale-canvas',
+        PUSH_STATE: 'push-state',
+        POP_STATE: 'pop_state',
+        SLEEP: 'sleep-state',
+        WAKE_UP_STATE: 'wake-up-state'
     });
     
     constructor({canvasElement=document.querySelector('canvas')}={}) {
@@ -69,7 +74,8 @@ class Game  {
                 this[prop] = this[prop].bind(this);
             });
         };
-        bindAllToSelf('resize', 'update', 'startGame', 'pauseGame', 'resumeGame', 'onStateChange');
+        bindAllToSelf('resize', 'update', 'startGame', 'pauseGame', 'resumeGame', 'onStateChange',
+        '_pushState', '_popState', '_onStateSleep', '_onWakeUp');
         const self = this;
         globals = {
             /**
@@ -129,6 +135,10 @@ class Game  {
         this.events.subscribe(Game.Events.PAUSE, this.pauseGame);
         this.events.subscribe(Game.Events.RESUME, this.resumeGame);
         this.events.subscribe(Game.Events.CHANGE_STATE, this.onStateChange);
+        this.events.subscribe(Game.Events.PUSH_STATE, this._pushState);
+        this.events.subscribe(Game.Events.POP_STATE, this._popState);
+        this.events.subscribe(Game.Events.SLEEP, this._onStateSleep);
+        this.events.subscribe(Game.Events.WAKE_UP_STATE, this._onWakeUp);
     }
 
     /**
@@ -138,6 +148,10 @@ class Game  {
     onStateChange(state) {
         this._gameMode.pop();
         this._gameMode.push(state);
+    }
+
+    get stateMachine() {
+        return this._gameMode;
     }
 
     
@@ -153,6 +167,7 @@ class Game  {
         this._canvasHeight = Math.floor(this._canvasWidth / 3 );
         this._canvas.width = this._canvasWidth;
         this._canvas.height = this._canvasHeight;
+        this.events.emit(Game.Events.RESCALE, this._canvasWidth, this._canvasHeight);
     }
 
     /**
@@ -198,7 +213,21 @@ class Game  {
         this._gameMode.resume();
     }
 
+    _pushState(state) {
+        this._gameMode.push(state);
+    }
+
+    _popState() {
+        this._gameMode.pop();
+    }
+
+    _onStateSleep() {
+        this._gameMode.sleep();
+    }
     
+    _onWakeUp() {
+        this._gameMode.wakeUp();
+    }
 }
 
 

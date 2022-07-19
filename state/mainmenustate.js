@@ -3,7 +3,7 @@
  * @since 12/09/2020
  */
 import {State} from './state.js';
-import {Globals} from '../game.js';
+import {Globals, Game} from '../game.js';
 import {Level1State} from './level1.js';
 import {centerText, Button} from '../ui/components.js';
 
@@ -35,7 +35,7 @@ class MainMenuState extends State {
       */
      updateState(elapsed) {
         // May resize any buttons.
-
+        super.updateState(elapsed);
     }
 
     /**
@@ -54,9 +54,7 @@ class MainMenuState extends State {
         
         ctx.restore();
 
-        for (const btn of this.buttons) {
-            btn.draw(ctx);
-        }
+        super.renderState(ctx);
     }
 
     /**
@@ -74,12 +72,12 @@ class MainMenuState extends State {
             Globals.getCanvasElement().width / 6, 
             Globals.getCanvasElement().height / 8);
         startBtn.setHandler(() => {
-            this.onExit();
-            Globals.getGameInstance().push(new Level1State(this.game));
+            this.game.events.emit(Game.Events.SLEEP);
+            this.game.events.emit(Game.Events.CHANGE_STATE, new Level1State(this.game));
         });
         startBtn.handler.bind(this);
         this.buttons.push(startBtn);
-        
+        this.addToRenderList(startBtn);
     }
 
     
@@ -96,19 +94,16 @@ class MainMenuState extends State {
         Globals.getCanvasElement().removeEventListener('click', this.action);
     }
 
-    /**
-     * Called when the game/state is paused.
-     */
-    onPause() {
-
+    onSleep() {
+        Globals.getCanvasElement().removeEventListener('click', this.action);
     }
 
-    /**
-     * Called before the game is reinstated.
-     */
-    onResume() {
-
+    onWakeUp() {
+        Globals.getCanvasElement().addEventListener('click', this.action);
     }
+
+
+    
 
 }
 

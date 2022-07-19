@@ -2,6 +2,8 @@
  * @author Enzo Mayo
  * @since 12/09/2020
  */
+import {GameObject} from './GameObject.js';
+
 /**
  * Player has lives, score, current level,
  * and controls the game. They can pause the game
@@ -9,8 +11,9 @@
  * and control the paddle.
  */
 // Class or object literal. Only need one. However it would be easier using classes.
-class Player {
+class Player extends GameObject {
     constructor(lives = 3) {
+        super();
         this._score = 0;
         this._lives = lives;
     }
@@ -58,6 +61,10 @@ class Player {
         ctx.fillStyle = '#0095DD';
         ctx.fillText('Lives: ' + this._lives, ctx.canvas.width - 65, 20);
         ctx.restore();
+    }
+
+    update(elapsed) {
+        //
     }
 }
 

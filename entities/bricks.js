@@ -331,6 +331,13 @@ class Bricks extends GameObject {
         return allDestroyed;
     }
 
+    update(elapsed) {
+        this._bricks.forEach(brickRow => {
+            brickRow.forEach(brick => {
+                brick.update(elapsed);
+            });
+        });
+    }
 
 }
 export { Brick, Bricks };
