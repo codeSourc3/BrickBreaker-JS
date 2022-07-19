@@ -272,7 +272,6 @@ class Bricks extends GameObject {
     }
 
     draw(ctx) {
-        console.log('Columns: ', this._colCount, ' Rows: ', this._rowCount);
         for (let row = 0; row < this._rowCount; row++) {
             for (let col = 0; col < this._colCount; col++) {
                 
@@ -298,7 +297,6 @@ class Bricks extends GameObject {
     intersects(ball, callback) {
         for (let c = 0; c < this._rowCount; c++) {
             for (let r = 0; r < this._colCount; r++) {
-                console.info(`C: ${c}, R: ${r}`);
                 let brick = this._bricks[c][r];
                 // if brick isn't destroyed.
                 if (!brick.isDestroyed()) {
@@ -333,6 +331,13 @@ class Bricks extends GameObject {
         return allDestroyed;
     }
 
+    update(elapsed) {
+        this._bricks.forEach(brickRow => {
+            brickRow.forEach(brick => {
+                brick.update(elapsed);
+            });
+        });
+    }
 
 }
 export { Brick, Bricks };

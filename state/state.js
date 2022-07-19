@@ -4,7 +4,9 @@
  * @since 12/09/2020
  */
 
+import { GameObject } from "../entities/GameObject.js";
 import { UnimplementedMethod } from "../errors/errors.js";
+import { Game } from "../game.js";
 
  class StateList {
      constructor() {
@@ -37,26 +39,100 @@ import { UnimplementedMethod } from "../errors/errors.js";
      top() {
          return this._states[this._states.length - 1];
      }
+
+     size() {
+        return this._states.length;
+     }
  }
 
  /**
   * Base class that all States inherit from.
-  * @interface
   */
  class State {
      /**
       * 
-      * @param {string} name 
+      * @param {string} name the name of the state
+      * @param {Game} game the game instance of the state
       */
-     constructor(name) {
+     constructor(name, game) {
          /**
           * @private
           */
          this._name = name;
+         /**
+          * @private
+          */
+         this._game = game;
+         /**
+          * @type {(GameObject|UIObject)[]}
+          */
+         this._renderList = [];
+         /**
+          * @type {GameObject[]}
+          */
+         this._updateList = [];
+
+         this._isSleeping = false;
      }
 
      get name() {
          return this._name;
+     }
+
+     get asleep() {
+        return this._isSleeping;
+     }
+
+     /**
+      * 
+      * @param {Function} func 
+      */
+     bindToSelf(func) {
+        if (typeof func === 'function' && func.name in this) {
+            this[func.name] = this[func.name].bind(this);
+        }
+     }
+
+     get game() {
+        return this._game;
+     }
+
+     addToRenderList(gameObject) {
+        if (gameObject instanceof GameObject || 'draw' in gameObject) {
+            this._renderList.push(gameObject);
+        }
+     }
+
+     addToUpdateList(gameObject) {
+        if (gameObject instanceof GameObject) {
+            this._updateList.push(gameObject);
+        }
+     }
+
+     removeFromeUpdateList(gameObject) {
+        if (gameObject instanceof GameObject && this._updateList.indexOf(gameObject) !== -1) {
+            this._updateList.slice(this._updateList.indexOf(gameObject), 1);
+        }
+     }
+
+     removeFromRenderList(gameObject) {
+        if ((gameObject instanceof GameObject || 'draw' in gameObject) && this._renderList.indexOf(gameObject) !== -1) {
+            this._renderList.slice(this._renderList.indexOf(gameObject), 1);
+        }
+     }
+
+     addGameObject(gameObject) {
+        if (gameObject instanceof GameObject) {
+            this.addToRenderList(gameObject);
+            this.addToUpdateList(gameObject);
+        }
+     }
+
+     removeGameObject(gameObject) {
+        if (gameObject instanceof GameObject) {
+            this.removeFromRenderList(gameObject);
+            this.removeFromeUpdateList(gameObject);
+        }
      }
 
      /**
@@ -66,7 +142,9 @@ import { UnimplementedMethod } from "../errors/errors.js";
       * 
       */
      updateState(elapsed) {
-         throw new UnimplementedMethod(State, this.updateState);
+         this._updateList.forEach(updatable => {
+            updatable.update(elapsed);
+         });
      }
 
      /**
@@ -74,7 +152,9 @@ import { UnimplementedMethod } from "../errors/errors.js";
       * @param {CanvasRenderingContext2D} ctx the canvas context.
       */
      renderState(ctx) {
-        throw new UnimplementedMethod(State, this.renderState);
+        this._renderList.forEach(renderable => {
+            renderable.draw(ctx)
+        })
      }
 
      /**
@@ -104,6 +184,20 @@ import { UnimplementedMethod } from "../errors/errors.js";
       */
      onResume() {
 
+     }
+
+     /**
+      * Used to disable inputs
+      */
+     onSleep() {
+        this._isSleeping = true;
+     }
+
+     /**
+      * Called to wake up a state from sleep
+      */
+     onWakeUp() {
+        this._isSleeping = false;
      }
  }
 
@@ -156,6 +250,25 @@ import { UnimplementedMethod } from "../errors/errors.js";
          if (state.onResume) {
              state.onResume();
          }
+     }
+
+     
+     sleep() {
+        let state = this._states.top();
+        if (state.onSleep) {
+            state.onSleep();
+        }
+     }
+
+     wakeUp() {
+        let state = this._states.top();
+        if (state.onWakeUp) {
+            state.onWakeUp();
+        }
+     }
+
+     get size() {
+        return this._states.size();
      }
  }
 

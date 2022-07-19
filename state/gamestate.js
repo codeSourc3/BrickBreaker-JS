@@ -5,13 +5,13 @@
 import { State } from "./state.js";
 import { Paddle } from '../entities/paddle.js';
 import { Ball } from '../entities/ball.js';
-import { Globals } from '../game.js';
+import { Game, Globals } from '../game.js';
 import { Bricks } from '../entities/bricks.js';
 import { WinGameState } from "./WinGameState.js";
 import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
-import { GameObject } from "../entities/GameObject.js";
 import { bounceOffPaddle, isCircleCollidingWithRect } from "../math/collisions.js";
+import { PauseMenu } from "./PauseMenu.js";
 
 /**
  * Base class for all levels.
@@ -21,11 +21,12 @@ export class RunningGameState extends State {
     /**
      * Constructs a level state.
      * @param {import('../entities/player.js').Player} player the current player.
+     * @param {Game} game the game instance for interacting with subsystems.
      * @param {Bricks} bricks the bricks object.
      * @param {string} title the title of the level
      */
-    constructor(player, bricks, title = 'Level ???') {
-        super(title);
+    constructor(player, game, bricks, title = 'Level ???') {
+        super(title, game);
         /**
          * @private
          */
@@ -66,6 +67,14 @@ export class RunningGameState extends State {
          * @private
          */
         this._isPaused = false;
+
+        this._pauseHandler = this._pauseHandler.bind(this);
+
+        this.addGameObject(this._player);
+        this.addGameObject(this._paddle);
+        this.addGameObject(this._bricks);
+        this.addGameObject(this._ball);
+
         /**
          * @private
          */
@@ -106,7 +115,7 @@ export class RunningGameState extends State {
                 this._player.decrementLife();
                 if (this._player.lives == 0) {
                     this.onExit();
-                    Globals.getGameInstance().push(new GameOverState());
+                    this.game.events.emit(Game.Events.CHANGE_STATE, new GameOverState(this.game));
                 } else {
                     this._ball.reset();
                     this._paddle.paddleX = (canvas.width - this._paddle.paddleWidth) / 2;
@@ -115,8 +124,7 @@ export class RunningGameState extends State {
         }
 
         // Apply movement
-        this._ball.update(elapsed);
-        this._paddle.update(elapsed);
+        super.updateState(elapsed);
     }
 
     nextLevel() {
@@ -130,11 +138,7 @@ export class RunningGameState extends State {
     renderState(ctx) {
         ctx.clearRect(0, 0, Globals.getCanvasElement().width, Globals.getCanvasElement().height);
         // Draw player info
-        this._player.draw(ctx);
-        //this._bricks.recalculateSize();
-        this._paddle.draw(ctx);
-        this._ball.draw(ctx);
-        this._bricks.draw(ctx);
+        super.renderState(ctx);
     }
 
 
@@ -145,13 +149,7 @@ export class RunningGameState extends State {
      */
     _pauseHandler(ev) {
         if (ev.type === 'keypress' && ev.key === 'p') {
-            if (this._isPaused) {
-                Globals.resumeGame();
-                this._isPaused = false;
-            } else {
-                Globals.pauseGame();
-                this._isPaused = true;
-            }
+            this.game.events.emit(Game.Events.PAUSE);
         }
     }
 
@@ -188,13 +186,7 @@ export class RunningGameState extends State {
         // Remove gamepad listener(s).
     }
 
-    /**
-     * Called when the game/state is paused.
-     */
-    onPause() {
-        // Pause the game
-        // Disable paddle movement
-        console.info('Pausing Level');
+    onSleep() {
         window.removeEventListener('keydown', this._paddle);
         window.removeEventListener('keyup', this._paddle);
         window.removeEventListener('pointermove', this._paddle);
@@ -207,9 +199,22 @@ export class RunningGameState extends State {
 
         // Disable ball movement
         this._ball.stop();
+        console.debug('GameState\'s onSleep() executed.');
+    }
+
+    /**
+     * Called when the game/state is paused.
+     */
+    onPause() {
+        // Pause the game
+        // Disable paddle movement
+        console.info('Pausing Level');
+        this.game.events.emit(Game.Events.SLEEP)
         console.log('Game paused');
 
         // Push InGameMenuState onto stack
+        console.debug('Pushing Pause Menu on to stack');
+        this.game.events.emit(Game.Events.PUSH_STATE, new PauseMenu(this.game));
     }
 
     /**
@@ -221,7 +226,7 @@ export class RunningGameState extends State {
             // all levels won
             console.info('All levels won');
             this.onExit();
-            Globals.getGameInstance().push(new WinGameState());
+            this.game.events.emit(Game.Events.CHANGE_STATE, new WinGameState(this.game));
         } else {
             // next level
             console.info('Next level');
@@ -229,6 +234,16 @@ export class RunningGameState extends State {
             this._ball.reset();
             this._bricks = Bricks.fromArray(this._levels[this._currentLevel]);
         }
+    }
+
+    onWakeUp() {
+        window.addEventListener('keydown', this._paddle);
+        window.addEventListener('keyup', this._paddle);
+        window.addEventListener('pointermove', this._paddle);
+        this._ball.dx = this._ballData.dx;
+        this._ball.dy = this._ballData.dy;
+        console.debug('Waking up GameState');
+        this.game.events.emit(Game.Events.RESUME);
     }
 
     /**
