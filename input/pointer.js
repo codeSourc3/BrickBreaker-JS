@@ -11,6 +11,7 @@ export class Pointer {
     #controller = new AbortController();
     #wasClicked = false;
     #isInBounds = false;
+    #isRegistered = false;
 
     static instance;
 
@@ -43,10 +44,16 @@ export class Pointer {
         this.#target.addEventListener('click', this, {signal: this.#controller.signal});
         this.#target.addEventListener('pointerenter', this, {signal: this.#controller.signal});
         this.#target.addEventListener('pointerleave', this, {signal: this.#controller.signal});
+        this.#isRegistered = true;
     }
 
     detach() {
         this.#controller.abort();
+        this.#isRegistered = false;
+    }
+
+    get attached() {
+        return this.#isRegistered;
     }
 
 

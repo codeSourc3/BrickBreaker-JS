@@ -24,7 +24,19 @@ class UIObject {
      * @return {boolean} true if pointer is within ui object, false otherwise.
      */
     intersects(pointer) {
-        return pointer.offsetX > this._x && pointer.offsetX < this._x + this._width && pointer.offsetY > this._y && pointer.offsetY < this._y + this._height;
+        return pointer.offsetX > this._x && 
+        pointer.offsetX < this._x + this._width 
+        && pointer.offsetY > this._y 
+        && pointer.offsetY < this._y + this._height;
+    }
+
+    /**
+     * 
+     * @param {{x: number, y: number}} param0 
+     * @returns 
+     */
+    intersectsXY({x, y}) {
+        return x > this._x && x < this._x + this._width && y > this._y && y < this._y + this._height;
     }
 
     
@@ -81,6 +93,10 @@ export class Button extends UIObject {
             return true;
         }
         return false;
+    }
+
+    get clicked() {
+        return this._clicked;
     }
 
     /**

@@ -6,6 +6,7 @@ import {State} from './state.js';
 import {Globals, Game} from '../game.js';
 import {Level1State} from './level1.js';
 import {centerText, Button} from '../ui/components.js';
+import { Pointer } from '../input/pointer.js';
 
 
 
@@ -35,6 +36,13 @@ class MainMenuState extends State {
       */
      updateState(elapsed) {
         // May resize any buttons.
+        const pointer = Pointer.getInstance();
+        if (!pointer.attached) {
+            pointer.attach();
+        }
+        if (this.buttons[0].intersectsXY(pointer) && pointer.wasClicked) {
+            this.buttons[0].handler();
+        }
         super.updateState(elapsed);
     }
 
@@ -64,7 +72,7 @@ class MainMenuState extends State {
         
 
         console.log('Entering main menu state.');
-        Globals.getCanvasElement().addEventListener('click', this.action);
+        //Globals.getCanvasElement().addEventListener('click', this.action);
         // Buttons take up the lower half of the screen.
         const startBtn = new Button('Start', 
             Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 

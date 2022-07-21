@@ -40,7 +40,7 @@ class Paddle extends GameObject {
             // hit the right side of the display.
             this._delta.x = 0;
         }
-        if (this.left < 0) {
+        if (this.left + this._delta.x < 0) {
             this.x = 0;
             this._delta.x =  0;
         }
@@ -50,17 +50,16 @@ class Paddle extends GameObject {
 
         if ((this._lastRelevantInput === 'undefined' || this._lastRelevantInput < pointer.lastUpdated ) && pointer.isInBounds) {
             this._isUsingPointer = true;
-            this._lastRelevantInput = Pointer.getInstance().lastUpdated;
-            console.debug('Last pointer input: ', this._lastRelevantInput);
-            let relativeX = Pointer.getInstance().x;
-            if (relativeX > 0 && relativeX < Globals.getCanvasElement().width) {
+            this._lastRelevantInput = pointer.lastUpdated;
+            let relativeX = pointer.x;
+            if (relativeX - this.halfWidth > 0 && relativeX + this.halfWidth < Globals.getCanvasElement().width) {
                 let newPosition = relativeX - this.halfWidth;
                 this.x = newPosition;
             }
         } else {
             this._isUsingPointer = false;
         }
-        if (this._isUsingPointer) this._delta.x = 0;
+        
     }
 
     /**
