@@ -73,7 +73,7 @@ class Game  {
         this._context = this._canvas.getContext('2d');
         this._currentDimensions = {width: this._canvasWidth, height: this._canvasHeight};
         this.resize();
-        this.pointer = new Pointer(this._canvas);
+        this.pointer = Pointer.getInstance(this._canvas);
 
         const bindAllToSelf = (...propNames) => {
             propNames.forEach(prop => {
@@ -170,6 +170,10 @@ class Game  {
 
     get context() {
         return this._context;
+    }
+
+    attachPointer() {
+        this.pointer.attach();
     }
     
 

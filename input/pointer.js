@@ -10,6 +10,7 @@ export class Pointer {
     #currentBounds;
     #controller = new AbortController();
     #wasClicked = false;
+    #isInBounds = false;
 
     static instance;
 
@@ -40,10 +41,17 @@ export class Pointer {
         this.#target.addEventListener('pointerdown', this, {signal: this.#controller.signal});
         this.#target.addEventListener('pointerup', this, {signal: this.#controller.signal});
         this.#target.addEventListener('click', this, {signal: this.#controller.signal});
+        this.#target.addEventListener('pointerenter', this, {signal: this.#controller.signal});
+        this.#target.addEventListener('pointerleave', this, {signal: this.#controller.signal});
     }
 
     detach() {
         this.#controller.abort();
+    }
+
+
+    get isInBounds() {
+        return this.#isInBounds;
     }
 
     get x() {
@@ -73,5 +81,14 @@ export class Pointer {
         this.pointerId = evt.pointerId;
         this.pointerType = evt.pointerType;
         this.#wasClicked = evt.type === 'click';
+        if (evt.type === 'pointerenter') {
+            this.#isInBounds = true;
+        }
+        if (evt.type === 'pointerover') {
+            this.#isInBounds = true;
+        } 
+        if (evt.type === 'pointerleave') {
+            this.#isInBounds = false;
+        }
     }
 }
