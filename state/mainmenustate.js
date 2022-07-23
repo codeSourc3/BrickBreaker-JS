@@ -42,6 +42,7 @@ class MainMenuState extends State {
         }
         if (this.buttons[0].intersectsXY(pointer) && pointer.wasClicked) {
             this.buttons[0].handler();
+            console.debug('Main menu updating');
         }
         super.updateState(elapsed);
     }
@@ -85,7 +86,7 @@ class MainMenuState extends State {
         });
         startBtn.handler.bind(this);
         this.buttons.push(startBtn);
-        this.addToRenderList(startBtn);
+        this.addGameObject(startBtn);
     }
 
     
@@ -107,7 +108,7 @@ class MainMenuState extends State {
     }
 
     onWakeUp() {
-        Globals.getCanvasElement().addEventListener('click', this.action);
+        
     }
 
 

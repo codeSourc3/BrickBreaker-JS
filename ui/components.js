@@ -1,9 +1,11 @@
+import {GameObject} from '../entities/GameObject.js'
+
 /**
  * @author Enzo Mayo
  * @since 12/09/2020
  */
 
-class UIObject {
+class UIObject extends GameObject {
 	
 	/**
 	 * @param {number} x the x coordinate relative to the upper left corner.
@@ -12,6 +14,7 @@ class UIObject {
 	 * @param {number} height the height of the ui object.
 	 */
     constructor(x, y, width, height) {
+        super();
         this._x = x;
         this._y = y;
         this._width = width;
@@ -55,6 +58,14 @@ class UIObject {
 
     get height() {
         return this._height;
+    }
+
+    draw(ctx) {
+        //
+    }
+
+    update(elapsed) {
+        //
     }
 }
 
@@ -124,6 +135,10 @@ export class Button extends UIObject {
 
         // Restore state to state before drawing took place.
         ctx.restore();
+    }
+
+    update(elapsed) {
+        //
     }
 }
 

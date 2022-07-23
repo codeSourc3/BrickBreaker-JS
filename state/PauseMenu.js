@@ -1,6 +1,7 @@
 import {State} from './state.js';
 import {Globals, Game} from '../game.js';
 import { centerText, Button } from '../ui/components.js';
+import {Pointer} from '../input/pointer.js';
 
 class PauseMenu extends State {
     /**
@@ -32,11 +33,19 @@ class PauseMenu extends State {
     }
 
     updateState(elapsed) {
+        const pointer = Pointer.getInstance();
+        if (!pointer.attached) {
+            pointer.attach();
+        }
+        if (this.buttons[0].intersectsXY(pointer) && pointer.wasClicked) {
+            this.buttons[0].handler();
+            console.debug('Pause Menu was clicked');
+        }
         super.updateState(elapsed);
     }
 
     renderState(ctx) {
-        let dimensions = Globals.getGameDimensions();
+        let dimensions = this.game.dimensions;
         ctx.clearRect(0, 0, dimensions.width, dimensions.height);
         ctx.save();
         ctx.fillStyle = 'blue';
@@ -48,26 +57,27 @@ class PauseMenu extends State {
     }
 
     onEnter() {
-        Globals.getCanvasElement().addEventListener('click', this.click);
-        Globals.getCanvasElement().addEventListener('keypress', this.onPKeyPressed);
+
+        this.game.canvas.addEventListener('keypress', this.onPKeyPressed);
         const resumeBtn = new Button('Resume', 
-            Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
-            Globals.getCanvasElement().height / 3, 
-            Globals.getCanvasElement().width / 6, 
-            Globals.getCanvasElement().height / 8);
+            this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2, 
+            this.game.canvas.height / 3, 
+            this.game.canvas.width / 6, 
+            this.game.canvas.height / 8);
         resumeBtn.setHandler(() => {
             console.debug('Popping pause menu off stack');
             this.game.events.emit(Game.Events.POP_STATE);
             console.debug('Waking up previous state')
             this.game.events.emit(Game.Events.WAKE_UP_STATE);
         });
+        resumeBtn.handler.bind(this);
         this.buttons.push(resumeBtn);
-        super.addToRenderList(resumeBtn);
+        this.addGameObject(resumeBtn);
+        console.assert(!this.asleep, 'Pause menu should not be asleep');
     }
 
     onExit() {
-        Globals.getCanvasElement().removeEventListener('click', this.click);
-        Globals.getCanvasElement().removeEventListener('keypress', this.onPKeyPressed);
+        this.game.canvas.removeEventListener('keypress', this.onPKeyPressed);
     }
 
     onWakeUp() {

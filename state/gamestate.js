@@ -149,7 +149,7 @@ export class RunningGameState extends State {
      */
     _pauseHandler(ev) {
         if (ev.type === 'keypress' && ev.key === 'p') {
-            this.game.events.emit(Game.Events.PAUSE);
+            this.game.events.emit(Game.Events.SLEEP);
         }
     }
 
@@ -199,22 +199,8 @@ export class RunningGameState extends State {
 
         // Disable ball movement
         this._ball.stop();
-        console.debug('GameState\'s onSleep() executed.');
-    }
-
-    /**
-     * Called when the game/state is paused.
-     */
-    onPause() {
-        // Pause the game
-        // Disable paddle movement
-        console.info('Pausing Level');
-        this.game.events.emit(Game.Events.SLEEP)
-        console.log('Game paused');
-
-        // Push InGameMenuState onto stack
-        console.debug('Pushing Pause Menu on to stack');
         this.game.events.emit(Game.Events.PUSH_STATE, new PauseMenu(this.game));
+        console.debug('GameState\'s onSleep() executed.');
     }
 
     /**
@@ -246,20 +232,6 @@ export class RunningGameState extends State {
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
         console.debug('Waking up GameState');
-        this.game.events.emit(Game.Events.RESUME);
-    }
-
-    /**
-     * Called before the game is reinstated.
-     */
-    onResume() {
-
-        // InGameMenuState does: Globals.getGameInstance().pop(); Globals.resume();
-        window.addEventListener('keydown', this._paddle);
-        window.addEventListener('keyup', this._paddle);
-        window.addEventListener('pointermove', this._paddle);
-        this._ball.dx = this._ballData.dx;
-        this._ball.dy = this._ballData.dy;
-        console.log('Game resumed.');
+        
     }
 }
