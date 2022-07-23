@@ -232,7 +232,10 @@ export class RunningGameState extends State {
             console.info('Next level');
             this.nextLevel();
             this._ball.reset();
+            let previousBrickField = this._bricks;
+            this.removeGameObject(previousBrickField);
             this._bricks = Bricks.fromArray(this._levels[this._currentLevel]);
+            this.addGameObject(this._bricks);
         }
     }
 
