@@ -1,9 +1,11 @@
+import {GameObject} from '../entities/GameObject.js'
+
 /**
  * @author Enzo Mayo
  * @since 12/09/2020
  */
 
-class UIObject {
+class UIObject extends GameObject {
 	
 	/**
 	 * @param {number} x the x coordinate relative to the upper left corner.
@@ -12,6 +14,7 @@ class UIObject {
 	 * @param {number} height the height of the ui object.
 	 */
     constructor(x, y, width, height) {
+        super();
         this._x = x;
         this._y = y;
         this._width = width;
@@ -24,7 +27,19 @@ class UIObject {
      * @return {boolean} true if pointer is within ui object, false otherwise.
      */
     intersects(pointer) {
-        return pointer.offsetX > this._x && pointer.offsetX < this._x + this._width && pointer.offsetY > this._y && pointer.offsetY < this._y + this._height;
+        return pointer.offsetX > this._x && 
+        pointer.offsetX < this._x + this._width 
+        && pointer.offsetY > this._y 
+        && pointer.offsetY < this._y + this._height;
+    }
+
+    /**
+     * 
+     * @param {{x: number, y: number}} param0 
+     * @returns 
+     */
+    intersectsXY({x, y}) {
+        return x > this._x && x < this._x + this._width && y > this._y && y < this._y + this._height;
     }
 
     
@@ -43,6 +58,14 @@ class UIObject {
 
     get height() {
         return this._height;
+    }
+
+    draw(ctx) {
+        //
+    }
+
+    update(elapsed) {
+        //
     }
 }
 
@@ -83,6 +106,10 @@ export class Button extends UIObject {
         return false;
     }
 
+    get clicked() {
+        return this._clicked;
+    }
+
     /**
      * 
      * @param {CanvasRenderingContext2D} ctx 
@@ -108,6 +135,10 @@ export class Button extends UIObject {
 
         // Restore state to state before drawing took place.
         ctx.restore();
+    }
+
+    update(elapsed) {
+        //
     }
 }
 

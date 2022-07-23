@@ -8,6 +8,7 @@ import {State, StateStack} from './state/state.js';
 import { MainMenuState } from "./state/mainmenustate.js";
 import { Key } from './input/keyboard.js';
 import {PubSub} from './eventemitter.js';
+import { Pointer } from './input/pointer.js';
 
 let globals;
 
@@ -32,6 +33,9 @@ class Game  {
      * @type {CanvasRenderingContext2D}
 		 */
     _context = null;
+
+    pointer;
+
     /**
      * 
 		 */
@@ -67,7 +71,9 @@ class Game  {
         this._canvas.width = this._canvasWidth;
         this._canvas.height = this._canvasHeight;
         this._context = this._canvas.getContext('2d');
+        this._currentDimensions = {width: this._canvasWidth, height: this._canvasHeight};
         this.resize();
+        this.pointer = Pointer.getInstance(this._canvas);
 
         const bindAllToSelf = (...propNames) => {
             propNames.forEach(prop => {
@@ -154,6 +160,21 @@ class Game  {
         return this._gameMode;
     }
 
+    get canvas() {
+        return this._canvas;
+    }
+
+    get dimensions() {
+        return this._currentDimensions;
+    }
+
+    get context() {
+        return this._context;
+    }
+
+    attachPointer() {
+        this.pointer.attach();
+    }
     
 
     /**
@@ -167,6 +188,8 @@ class Game  {
         this._canvasHeight = Math.floor(this._canvasWidth / 3 );
         this._canvas.width = this._canvasWidth;
         this._canvas.height = this._canvasHeight;
+        this._currentDimensions.width = this._canvasWidth;
+        this._currentDimensions.height = this._canvasHeight;
         this.events.emit(Game.Events.RESCALE, this._canvasWidth, this._canvasHeight);
     }
 

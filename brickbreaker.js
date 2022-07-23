@@ -22,4 +22,5 @@ instructions.addEventListener('click', (e) => {
 });
 
 const game = new Game();
+game.attachPointer();
 game.startGame();

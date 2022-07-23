@@ -270,6 +270,10 @@ import { Game } from "../game.js";
      get size() {
         return this._states.size();
      }
+
+     get current() {
+        return this._states.top();
+     }
  }
 
  export {State, StateStack};
