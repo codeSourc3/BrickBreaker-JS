@@ -6,6 +6,7 @@
 import {State, StateStack} from './state/state.js';
 //import { Level1State } from "./state/gamestate.js";
 import { MainMenuState } from "./state/mainmenustate.js";
+import { Clock } from './clock.js';
 import { Key } from './input/keyboard.js';
 import {PubSub} from './eventemitter.js';
 import { Pointer } from './input/pointer.js';
@@ -53,6 +54,10 @@ class Game  {
 
     events = new PubSub();
 
+    _clock;
+
+    static DESIRED_FRAME_RATE = 60;
+
     static Events = Object.freeze({
         PAUSE: 'pause-game',
         RESUME: 'resume-game',
@@ -65,7 +70,7 @@ class Game  {
         WAKE_UP_STATE: 'wake-up-state'
     });
     
-    constructor({canvasElement=document.querySelector('canvas')}={}) {
+    constructor({canvasElement=document.querySelector('canvas'), fps = Game.DESIRED_FRAME_RATE}={}) {
         this._canvas = canvasElement;
         this._ratio = this._canvasWidth / this._canvasHeight;
         this._canvas.width = this._canvasWidth;
@@ -74,13 +79,22 @@ class Game  {
         this._currentDimensions = {width: this._canvasWidth, height: this._canvasHeight};
         this.resize();
         this.pointer = Pointer.getInstance(this._canvas);
-
+        this._clock = new Clock(fps, (elapsed) => {
+            if (this._canvas.width !== document.documentElement.offsetWidth ) {
+                this.resize();
+            }
+            if (!this._paused) {
+                this._gameMode.update(elapsed);
+            }
+        }, () => {
+            this._gameMode.render(this._context);
+        });
         const bindAllToSelf = (...propNames) => {
             propNames.forEach(prop => {
                 this[prop] = this[prop].bind(this);
             });
         };
-        bindAllToSelf('resize', 'update', 'startGame', 'pauseGame', 'resumeGame', 'onStateChange',
+        bindAllToSelf('resize', 'startGame', 'pauseGame', 'resumeGame', 'onStateChange',
         '_pushState', '_popState', '_onStateSleep', '_onWakeUp');
         const self = this;
         globals = {
@@ -194,28 +208,17 @@ class Game  {
     }
 
     /**
-     * 
+     * @deprecated
      */
-    update(elapsed) {
-        
-        if (this._canvas.width !== document.documentElement.offsetWidth ) {
-            this.resize();
-        }
-        if (!this._paused) {
-            this._gameMode.update(elapsed);
-        }
-        this._gameMode.render(this._context);
-        
-        this._frameId = window.requestAnimationFrame(this.update);
-        
-    }
+   
 
     /**
      * 
      */
     startGame() {
         this._gameMode.push(new MainMenuState(this));
-        this.update();
+        this._clock.start();
+        //this.update();
     }
 
     /**
