@@ -1,13 +1,25 @@
 
 
 export class Clock {
-    #start;
+    /**
+     * @type {number}
+     */
+    #now;
+    /**
+     * @type {number}
+     */
+    #sinceStart;
+    /**
+     * @type {string}
+     */
+    #currentFPS;
     #elapsed;
     #previousTimestamp;
     #frameId;
     #isRunning = false;
-    #fpsInMillis;
-    #lag=0;
+    #fpsInterval;
+    #startTime;
+    #frameCount = 0;
     static #MS_PER_UPDATE = 12;
 
     /**
@@ -17,32 +29,43 @@ export class Clock {
      * @param {() => void} renderCallback
      */
     constructor(desiredFPS, updateCallback, renderCallback) {
-        this.#fpsInMillis = desiredFPS / 1000;
+        this.#fpsInterval = 1000 / desiredFPS;
         this.updateCallback = updateCallback;
         this.renderCallback = renderCallback;
         this.step = this.step.bind(this);
     }
 
     start() {
+        this.#isRunning = true;
+        this.#previousTimestamp = performance.now();
+        this.#startTime = this.#previousTimestamp;
         this.#frameId = window.requestAnimationFrame(this.step);
-        this.#isRunning = true; 
     }
 
+    /**
+     * 
+     * @param {number} timestamp 
+     */
     step(timestamp) {
-        if (typeof this.#previousTimestamp === 'undefined') {
-            this.#previousTimestamp = timestamp;
+        this.#now = timestamp;
+        this.#elapsed = this.#now - this.#previousTimestamp;
+        this.#sinceStart = this.#now - this.#startTime;
+        this.#currentFPS = (Math.round(1000 / (this.#sinceStart / ++this.#frameCount) * 100) / 100).toFixed(2);
+        if (this.#elapsed > this.#fpsInterval) {
+            this.updateCallback(this.#elapsed);
+            this.renderCallback();
+            this.#previousTimestamp = this.#now - (this.#elapsed % this.#fpsInterval);
         }
-        this.#elapsed = timestamp - this.#previousTimestamp;
-        this.#previousTimestamp = timestamp;
-
-        this.updateCallback(this.#elapsed);
-        this.renderCallback();
-        this.#frameId = window.requestAnimationFrame(this.step);
+        this.#frameId = requestAnimationFrame(this.step);
     }
 
     stop() {
         window.cancelAnimationFrame(this.#frameId);
         this.#isRunning = false;
+    }
+
+    get currentFPS() {
+        return this.#currentFPS;
     }
 
     get running() {
