@@ -82,7 +82,7 @@ class MainMenuState extends State {
             Globals.getCanvasElement().height / 8);
         startBtn.setHandler(() => {
             this.game.events.emit(Game.Events.SLEEP);
-            this.game.events.emit(Game.Events.CHANGE_STATE, new Level1State(this.game));
+            this.game.events.emit(Game.Events.PUSH_STATE, new Level1State(this.game));
         });
         startBtn.handler.bind(this);
         this.buttons.push(startBtn);
@@ -100,15 +100,14 @@ class MainMenuState extends State {
         console.log('Exiting main menu');
         // addEventListener() and removeEventListener() weren't actually removing it.
         // This gives me more control anyway.
-        Globals.getCanvasElement().removeEventListener('click', this.action);
     }
 
     onSleep() {
-        Globals.getCanvasElement().removeEventListener('click', this.action);
+        //
     }
 
     onWakeUp() {
-        
+        //
     }
 
 
