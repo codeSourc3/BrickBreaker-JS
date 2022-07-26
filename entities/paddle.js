@@ -89,6 +89,10 @@ class Paddle extends GameObject {
         this._isDisabled = true;
     }
 
+    enablePointerInput() {
+        this._isDisabled = false;
+    }
+
     get paddleX() {
         return this._paddleX;
     }
