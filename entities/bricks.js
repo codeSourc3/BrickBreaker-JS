@@ -5,7 +5,7 @@
 
 import { Globals } from "../game.js";
 import { isCircleCollidingWithRect } from "../math/collisions.js";
-import { normalizeBox, rescaleBox } from "../math/sizing.js";
+import { normalizeBox, rescaleBox } from "../math/scaling.js";
 import { Ball } from "./ball.js";
 import { GameObject } from './GameObject.js';
 
