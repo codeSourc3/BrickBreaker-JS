@@ -28,7 +28,7 @@ class PauseMenu extends State {
             this.game.events.emit(Game.Events.WAKE_UP_STATE);
         };
         this.onPKeyPressed = e => {
-            if (e.type === 'keypress' && e.key === 'P') {
+            if (e.type === 'keypress' && e.key === 'p') {
                 this.resumeCb();
             }
         };
@@ -66,7 +66,7 @@ class PauseMenu extends State {
 
     onEnter() {
 
-        this.game.canvas.addEventListener('keypress', this.onPKeyPressed);
+        window.addEventListener('keypress', this.onPKeyPressed);
         const buttonWidth = this.game.canvas.width / 6;
         const buttonHeight = this.game.canvas.height / 8;
         const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
@@ -91,7 +91,7 @@ class PauseMenu extends State {
     }
 
     onExit() {
-        this.game.canvas.removeEventListener('keypress', this.onPKeyPressed);
+        window.removeEventListener('keypress', this.onPKeyPressed);
     }
 
     onWakeUp() {

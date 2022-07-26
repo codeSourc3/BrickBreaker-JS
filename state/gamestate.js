@@ -163,7 +163,6 @@ export class RunningGameState extends State {
         // Add key listener for paddle
         window.addEventListener('keydown', this._paddle);
         window.addEventListener('keyup', this._paddle);
-        window.addEventListener('pointermove', this._paddle);
 
         // Add key listener for pausing and resuming the game
         window.addEventListener('keypress', this._pauseHandler);
@@ -176,7 +175,6 @@ export class RunningGameState extends State {
      */
     onExit() {
         // Remove pointer listener(s).
-        window.removeEventListener('pointermove', this._paddle, true);
         // Remove key listener(s);
         console.log('Exiting Game state');
         window.removeEventListener('keydown', this._paddle, true);
@@ -196,8 +194,7 @@ export class RunningGameState extends State {
     onSleep() {
         window.removeEventListener('keydown', this._paddle);
         window.removeEventListener('keyup', this._paddle);
-        window.removeEventListener('pointermove', this._paddle);
-
+        window.removeEventListener('keypress', this._pauseHandler);
         // Save ball velocity
         this._ballData.x = this._ball.x;
         this._ballData.y = this._ball.y;
@@ -235,10 +232,15 @@ export class RunningGameState extends State {
     onWakeUp() {
         window.addEventListener('keydown', this._paddle);
         window.addEventListener('keyup', this._paddle);
-        window.addEventListener('pointermove', this._paddle);
+        window.addEventListener('keypress', this._pauseHandler);
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
         console.debug('Waking up GameState');
         
+    }
+
+    disablePaddleMovement() {
+        window.removeEventListener('keydown', this._paddle);
+        window.removeEventListener('keyup', this._paddle);
     }
 }
