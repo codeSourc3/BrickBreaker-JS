@@ -21,11 +21,11 @@ class Game  {
 		/**
 		 * 
 		 */
-    _canvasWidth = 320;
+    _canvasWidth = 480;
     /**
      * 
 		 */
-    _canvasHeight = 240;
+    _canvasHeight = 320;
     /**
      * @type {HTMLCanvasElement}
 		 */

@@ -176,14 +176,21 @@ export class RunningGameState extends State {
      */
     onExit() {
         // Remove pointer listener(s).
-
+        window.removeEventListener('pointermove', this._paddle, true);
         // Remove key listener(s);
         console.log('Exiting Game state');
         window.removeEventListener('keydown', this._paddle, true);
         window.removeEventListener('keyup', this._paddle, true);
-        window.removeEventListener('pointermove', this._paddle, true);
+        
         window.removeEventListener('keypress', this._pauseHandler);
+        
         // Remove gamepad listener(s).
+
+        // Remove game objects
+        this.removeGameObject(this._player);
+        this.removeGameObject(this._ball);
+        this.removeGameObject(this._bricks);
+        this.removeGameObject(this._paddle);
     }
 
     onSleep() {
