@@ -22,13 +22,9 @@ export function isCircleCollidingWithRect({ x: circleX, y: circleY, radius }, { 
  * @param {import('../entities/paddle.js').Paddle} paddle 
  */
 export function bounceOffPaddle(ball, paddle) {
-    ball.flipDy();
-    let hitPos = ball.x - paddle.centerX;
-    ball.dx += hitPos / 7.5;
-    const maxVelX = 6;
-    if (ball.dx > maxVelX) {
-        ball.dx = maxVelX;
-    } else if (ball.dx < -maxVelX) {
-        ball.dx = -maxVelX;
-    }
+    let collidePoint = ball.x - paddle.centerX;
+    collidePoint /= paddle.halfWidth;
+    let angle = collidePoint * (Math.PI / 3);
+    ball.dx = ball.speed * Math.sin(angle);
+    ball.dy = -ball.speed * Math.cos(angle);
 }

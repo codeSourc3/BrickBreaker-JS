@@ -27,7 +27,7 @@ class Ball extends GameObject {
          * @private
          */
         this._delta = new Vec2(3, -3);
-        this._speed = 4;
+        this._speed = 3;
         /**
          * @private
          */
@@ -108,6 +108,14 @@ class Ball extends GameObject {
 
         this._pos.x += this._delta.x;
         this._pos.y += this._delta.y;
+    }
+
+    get speed() {
+        return this._speed;
+    }
+
+    set speed(value) {
+        this._speed = Number(value);
     }
 
     /**
