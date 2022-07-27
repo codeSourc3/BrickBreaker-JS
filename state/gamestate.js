@@ -33,8 +33,8 @@ export class RunningGameState extends State {
          * @private
          */
         this._player = player;
-        
-        
+
+
         const context = Globals.getCanvasElement();
         const paddleWidth = context.width / 10;
         const paddleHeight = context.height / 25;
@@ -107,7 +107,7 @@ export class RunningGameState extends State {
     updateState(elapsed) {
 
         let canvas = this.game.dimensions;
-        
+
         if (!this._isAiming) {
             this._bricks.intersects(this._ball, brick => {
                 brick.damage();
@@ -117,14 +117,14 @@ export class RunningGameState extends State {
             if (this._bricks.allBricksDestroyed()) {
                 console.info('All bricks destroyed');
                 this.onWin();
-                
+
             }
             this._bricks.recalculateSize();
             // Do collision detecton
             if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
                 if (isCircleCollidingWithRect(this._ball, this._paddle)) {
                     bounceOffPaddle(this._ball, this._paddle);
-                     
+
                 } else {
                     this._player.decrementLife();
                     if (this._player.lives == 0) {
@@ -140,19 +140,9 @@ export class RunningGameState extends State {
             }
         } else {
             const pointer = Pointer.getInstance();
-            const ballPos = this._ball.center;
-            let dx = pointer.x - ballPos.x;
-            let dy = pointer.y - ballPos.y;
-            let dl = Math.sqrt(dx * dx + dy * dy);
-            dx /= dl;
-            dy /= dl;
-            this._aiming.dx = dx;
-            this._aiming.dy = dy;
-            this._currentDelay--;
+            this.aim(pointer);
             if (pointer.wasClicked && this._currentDelay <= 0) {
-                this._ball.dx = dx * 3;
-                this._ball.dy = dy * 3;
-                this.disableAiming();
+                this.fire(3);
                 console.debug('Was fired');
             }
 
@@ -160,6 +150,27 @@ export class RunningGameState extends State {
 
         // Apply movement
         super.updateState(elapsed);
+    }
+
+    /**
+     * 
+     * @param {{x: number, y: number}} pos 
+     */
+    aim(pos) {
+        
+        const ballPos = this._ball.center;
+        let dx = pos.x - ballPos.x;
+        let dy = pos.y - ballPos.y;
+        if (dy > -(this._ball.radius * 2)) {
+            // aiming towards bottom of screen. Can't have that.
+            dy = -(this._ball.radius * 2);
+        }
+        let dl = Math.sqrt(dx * dx + dy * dy);
+        dx /= dl;
+        dy /= dl;
+        this._aiming.dx = dx;
+        this._aiming.dy = dy;
+        this._currentDelay--;
     }
 
     /**
@@ -233,9 +244,9 @@ export class RunningGameState extends State {
         // Remove pointer listener(s).
         // Remove key listener(s);
         console.log('Exiting Game state');
-        
+
         window.removeEventListener('keypress', this._pauseHandler);
-        
+
         // Remove gamepad listener(s).
 
         // Remove game objects
@@ -295,7 +306,7 @@ export class RunningGameState extends State {
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
         console.debug('Waking up GameState');
-        
+
     }
 
     disablePaddleMovement() {
