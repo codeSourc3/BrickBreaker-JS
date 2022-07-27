@@ -93,6 +93,10 @@ class Paddle extends GameObject {
         this._isDisabled = false;
     }
 
+    get disabled() {
+        return this._isDisabled;
+    }
+
     get paddleX() {
         return this._paddleX;
     }

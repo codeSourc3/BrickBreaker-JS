@@ -162,6 +162,17 @@ export class RunningGameState extends State {
         super.updateState(elapsed);
     }
 
+    /**
+     * 
+     * @param {number} speed 
+     */
+    fire(speed) {
+        this._ball.dx = this._aiming.dx * speed;
+        this._ball.dy = this._aiming.dy * speed;
+        this.disableAiming();
+        console.assert(!this._paddle.disabled, 'Paddle input was not enabled.');
+    }
+
     nextLevel() {
         this._currentLevel++;
     }
@@ -235,8 +246,8 @@ export class RunningGameState extends State {
     }
 
     onSleep() {
-        this.disablePaddleMovement();
         window.removeEventListener('keypress', this._pauseHandler);
+        this.disablePaddleMovement();
         // Save ball velocity
         this._ballData.x = this._ball.x;
         this._ballData.y = this._ball.y;
@@ -275,7 +286,11 @@ export class RunningGameState extends State {
     }
 
     onWakeUp() {
-        
+        if (this._isAiming) {
+            this.enableAiming();
+        } else {
+            this.enablePaddleMovement();
+        }
         window.addEventListener('keypress', this._pauseHandler);
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
@@ -295,6 +310,9 @@ export class RunningGameState extends State {
         this._paddle.enablePointerInput();
     }
 
+    /**
+     * Disables paddle movement as well as enabling aiming.
+     */
     enableAiming() {
         this._isAiming = true;
         this._currentDelay = this._levelDelay;
