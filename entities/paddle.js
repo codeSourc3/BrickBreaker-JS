@@ -30,6 +30,7 @@ class Paddle extends GameObject {
         this._paddleY = 0;
         this._isUsingPointer = false;
         this._lastRelevantInput = 0;
+        this._isDisabled = false;
     }
 
     update(elapsed) {
@@ -47,18 +48,20 @@ class Paddle extends GameObject {
 
         this._paddleX += this._delta.x;
         const pointer = Pointer.getInstance();
-
-        if ((this._lastRelevantInput === 'undefined' || this._lastRelevantInput < pointer.lastUpdated ) && pointer.isInBounds) {
-            this._isUsingPointer = true;
-            this._lastRelevantInput = pointer.lastUpdated;
-            let relativeX = pointer.x;
-            if (relativeX - this.halfWidth > 0 && relativeX + this.halfWidth < Globals.getCanvasElement().width) {
-                let newPosition = relativeX - this.halfWidth;
-                this.x = newPosition;
+        if (!this._isDisabled) {
+            if ((this._lastRelevantInput === 'undefined' || this._lastRelevantInput < pointer.lastUpdated ) && pointer.isInBounds) {
+                this._isUsingPointer = true;
+                this._lastRelevantInput = pointer.lastUpdated;
+                let relativeX = pointer.x;
+                if (relativeX - this.halfWidth > 0 && relativeX + this.halfWidth < Globals.getCanvasElement().width) {
+                    let newPosition = relativeX - this.halfWidth;
+                    this.x = newPosition;
+                }
+            } else {
+                this._isUsingPointer = false;
             }
-        } else {
-            this._isUsingPointer = false;
         }
+        
         
     }
 
@@ -80,12 +83,18 @@ class Paddle extends GameObject {
         context.closePath();
         context.restore();
 
-        context.beginPath();
-        context.moveTo(this.centerX, this.centerY);
-        context.lineTo(this.centerX + this._delta.x * 5, this.centerY + this._delta.y * 5);
-        context.strokeStyle = 'black';
-        context.stroke();
-        context.closePath();
+    }
+
+    disablePointerInput() {
+        this._isDisabled = true;
+    }
+
+    enablePointerInput() {
+        this._isDisabled = false;
+    }
+
+    get disabled() {
+        return this._isDisabled;
     }
 
     get paddleX() {

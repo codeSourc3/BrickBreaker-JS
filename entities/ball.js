@@ -26,7 +26,7 @@ class Ball extends GameObject {
         /**
          * @private
          */
-        this._delta = new Vec2(3, -3);
+        this._delta = new Vec2(0, 0);
         this._speed = 3;
         /**
          * @private
@@ -193,8 +193,6 @@ class Ball extends GameObject {
         let canvas = Globals.getCanvasElement();
         this._pos.x = canvas.width / 2;
         this._pos.y = canvas.height - 30;
-        this._delta.x = 2;
-        this._delta.y = -2;
     }
 
     get radius() {

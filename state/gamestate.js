@@ -12,6 +12,8 @@ import { GameOverState } from './gameoverstate.js';
 import { levels } from './leveldata.js';
 import { bounceOffPaddle, isCircleCollidingWithRect } from "../math/collisions.js";
 import { PauseMenu } from "./PauseMenu.js";
+import { Pointer } from "../input/pointer.js";
+import { Vec2 } from "../math/vec2.js";
 
 /**
  * Base class for all levels.
@@ -31,8 +33,8 @@ export class RunningGameState extends State {
          * @private
          */
         this._player = player;
-        
-        
+
+
         const context = Globals.getCanvasElement();
         const paddleWidth = context.width / 10;
         const paddleHeight = context.height / 25;
@@ -67,6 +69,9 @@ export class RunningGameState extends State {
          * @private
          */
         this._isPaused = false;
+        this._isAiming = true;
+        this._levelDelay = 100;
+        this._currentDelay = this._levelDelay;
 
         this._pauseHandler = this._pauseHandler.bind(this);
 
@@ -84,6 +89,14 @@ export class RunningGameState extends State {
             dx: 0,
             dy: 0
         };
+
+        this._aiming = {
+            dx: 0,
+            dy: 0
+        };
+
+
+        this._aimingAngle = 0;
     }
 
     /**
@@ -93,38 +106,82 @@ export class RunningGameState extends State {
       */
     updateState(elapsed) {
 
-        let canvas = Globals.getCanvasElement();
-        
-        this._bricks.intersects(this._ball, brick => {
-            brick.damage();
-            this._ball.flipDy();
-            this._player.increaseScore();
-        });
-        if (this._bricks.allBricksDestroyed()) {
-            console.info('All bricks destroyed');
-            this.onWin();
-            
-        }
-        this._bricks.recalculateSize();
-        // Do collision detecton
-        if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
-            if (isCircleCollidingWithRect(this._ball, this._paddle)) {
-                bounceOffPaddle(this._ball, this._paddle);
-                 
-            } else {
-                this._player.decrementLife();
-                if (this._player.lives == 0) {
-                    this.onExit();
-                    this.game.events.emit(Game.Events.CHANGE_STATE, new GameOverState(this.game));
+        let canvas = this.game.dimensions;
+
+        if (!this._isAiming) {
+            this._bricks.intersects(this._ball, brick => {
+                brick.damage();
+                this._ball.flipDy();
+                this._player.increaseScore();
+            });
+            if (this._bricks.allBricksDestroyed()) {
+                console.info('All bricks destroyed');
+                this.onWin();
+
+            }
+            this._bricks.recalculateSize();
+            // Do collision detecton
+            if (this._ball.y + this._ball.dy > canvas.height - this._ball.radius) {
+                if (isCircleCollidingWithRect(this._ball, this._paddle)) {
+                    bounceOffPaddle(this._ball, this._paddle);
+
                 } else {
-                    this._ball.reset();
-                    this._paddle.paddleX = (canvas.width - this._paddle.paddleWidth) / 2;
+                    this._player.decrementLife();
+                    if (this._player.lives == 0) {
+                        this.onExit();
+                        this.game.events.emit(Game.Events.CHANGE_STATE, new GameOverState(this.game));
+                    } else {
+                        this._ball.reset();
+                        this._ball.stop();
+                        this._paddle.paddleX = (canvas.width - this._paddle.paddleWidth) / 2;
+                        this.enableAiming();
+                    }
                 }
             }
+        } else {
+            const pointer = Pointer.getInstance();
+            this.aim(pointer);
+            if (pointer.wasClicked && this._currentDelay <= 0) {
+                this.fire(3);
+                console.debug('Was fired');
+            }
+
         }
 
         // Apply movement
         super.updateState(elapsed);
+    }
+
+    /**
+     * 
+     * @param {{x: number, y: number}} pos 
+     */
+    aim(pos) {
+        
+        const ballPos = this._ball.center;
+        let dx = pos.x - ballPos.x;
+        let dy = pos.y - ballPos.y;
+        if (dy > -(this._ball.radius * 2)) {
+            // aiming towards bottom of screen. Can't have that.
+            dy = -(this._ball.radius * 2);
+        }
+        let dl = Math.sqrt(dx * dx + dy * dy);
+        dx /= dl;
+        dy /= dl;
+        this._aiming.dx = dx;
+        this._aiming.dy = dy;
+        this._currentDelay--;
+    }
+
+    /**
+     * 
+     * @param {number} speed 
+     */
+    fire(speed) {
+        this._ball.dx = this._aiming.dx * speed;
+        this._ball.dy = this._aiming.dy * speed;
+        this.disableAiming();
+        console.assert(!this._paddle.disabled, 'Paddle input was not enabled.');
     }
 
     nextLevel() {
@@ -137,8 +194,19 @@ export class RunningGameState extends State {
      */
     renderState(ctx) {
         ctx.clearRect(0, 0, Globals.getCanvasElement().width, Globals.getCanvasElement().height);
+        if (this._isAiming) {
+            const ballPos = this._ball.center;
+            this.drawCursor(ctx, ballPos.x, ballPos.y, this._aiming.dx, this._aiming.dy);
+        }
         // Draw player info
         super.renderState(ctx);
+    }
+
+    drawCursor(ctx, objectX, objectY, dx, dy) {
+        ctx.beginPath();
+        ctx.moveTo(objectX, objectY);
+        ctx.lineTo(objectX + dx * 100, objectY + dy * 100);
+        ctx.stroke();
     }
 
 
@@ -161,9 +229,7 @@ export class RunningGameState extends State {
         // Add pointer listener
 
         // Add key listener for paddle
-        window.addEventListener('keydown', this._paddle);
-        window.addEventListener('keyup', this._paddle);
-        window.addEventListener('pointermove', this._paddle);
+        this.enableAiming();
 
         // Add key listener for pausing and resuming the game
         window.addEventListener('keypress', this._pauseHandler);
@@ -176,14 +242,11 @@ export class RunningGameState extends State {
      */
     onExit() {
         // Remove pointer listener(s).
-        window.removeEventListener('pointermove', this._paddle, true);
         // Remove key listener(s);
         console.log('Exiting Game state');
-        window.removeEventListener('keydown', this._paddle, true);
-        window.removeEventListener('keyup', this._paddle, true);
-        
+
         window.removeEventListener('keypress', this._pauseHandler);
-        
+
         // Remove gamepad listener(s).
 
         // Remove game objects
@@ -194,10 +257,8 @@ export class RunningGameState extends State {
     }
 
     onSleep() {
-        window.removeEventListener('keydown', this._paddle);
-        window.removeEventListener('keyup', this._paddle);
-        window.removeEventListener('pointermove', this._paddle);
-
+        window.removeEventListener('keypress', this._pauseHandler);
+        this.disablePaddleMovement();
         // Save ball velocity
         this._ballData.x = this._ball.x;
         this._ballData.y = this._ball.y;
@@ -225,20 +286,52 @@ export class RunningGameState extends State {
             console.info('Next level');
             this.nextLevel();
             this._ball.reset();
+            this._ball.stop();
+            this._paddle.paddleX = (this.game.canvas.width - this._paddle.paddleWidth) / 2;
             let previousBrickField = this._bricks;
             this.removeGameObject(previousBrickField);
             this._bricks = Bricks.fromArray(this._levels[this._currentLevel]);
             this.addGameObject(this._bricks);
+            this.enableAiming();
         }
     }
 
     onWakeUp() {
-        window.addEventListener('keydown', this._paddle);
-        window.addEventListener('keyup', this._paddle);
-        window.addEventListener('pointermove', this._paddle);
+        if (this._isAiming) {
+            this.enableAiming();
+        } else {
+            this.enablePaddleMovement();
+        }
+        window.addEventListener('keypress', this._pauseHandler);
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
         console.debug('Waking up GameState');
-        
+
+    }
+
+    disablePaddleMovement() {
+        window.removeEventListener('keydown', this._paddle);
+        window.removeEventListener('keyup', this._paddle);
+        this._paddle.disablePointerInput();
+    }
+
+    enablePaddleMovement() {
+        window.addEventListener('keydown', this._paddle);
+        window.addEventListener('keyup', this._paddle);
+        this._paddle.enablePointerInput();
+    }
+
+    /**
+     * Disables paddle movement as well as enabling aiming.
+     */
+    enableAiming() {
+        this._isAiming = true;
+        this._currentDelay = this._levelDelay;
+        this.disablePaddleMovement();
+    }
+
+    disableAiming() {
+        this._isAiming = false;
+        this.enablePaddleMovement();
     }
 }
