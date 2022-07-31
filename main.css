@@ -8,6 +8,7 @@ canvas {
     margin: 0 auto;
     background: #ffffff;
     pointer-events: auto;
+    touch-action: none;
     
 }
 
