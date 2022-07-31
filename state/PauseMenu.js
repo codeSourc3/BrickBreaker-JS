@@ -1,7 +1,8 @@
 import {State} from './state.js';
-import {Globals, Game} from '../game.js';
+import {Game} from '../game.js';
 import { centerText, Button } from '../ui/components.js';
 import {Pointer} from '../input/pointer.js';
+import keyboard, { KeyboardManager, Keys } from '../input/keyboard.js';
 
 class PauseMenu extends State {
     /**
@@ -27,8 +28,8 @@ class PauseMenu extends State {
             this.game.events.emit(Game.Events.POP_STATE);
             this.game.events.emit(Game.Events.WAKE_UP_STATE);
         };
-        this.onPKeyPressed = e => {
-            if (e.type === 'keypress' && e.key === 'p') {
+        this.onPKeyPressed = key => {
+            if (key === 'p') {
                 this.resumeCb();
             }
         };
@@ -46,7 +47,7 @@ class PauseMenu extends State {
             if (this.buttons[i].intersectsXY(pointer) && pointer.wasClicked) {
                 this.buttons[i].handler();
                 console.debug(`Pause Menu button ${this.buttons[i].text} was clicked.`);
-                break;
+                
             }
         }
         super.updateState(elapsed);
@@ -65,8 +66,7 @@ class PauseMenu extends State {
     }
 
     onEnter() {
-
-        window.addEventListener('keypress', this.onPKeyPressed);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this.onPKeyPressed);
         const buttonWidth = this.game.canvas.width / 6;
         const buttonHeight = this.game.canvas.height / 8;
         const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
@@ -91,7 +91,7 @@ class PauseMenu extends State {
     }
 
     onExit() {
-        window.removeEventListener('keypress', this.onPKeyPressed);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.onPKeyPressed);
     }
 
     onWakeUp() {

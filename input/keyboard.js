@@ -22,9 +22,9 @@ const Keys = Object.freeze({
 
 class KeyboardManager {
     /**
-     * @type {Map<string, KeyboardEvent>}
+     * @type {Set<string>}
      */
-    #pressedKeys = new Map();
+    #pressedKeys = new Set();
     
     events = new PubSub();
 
@@ -73,7 +73,7 @@ class KeyboardManager {
     handleEvent(keyboardEvt) {
         if (keyboardEvt.type === 'keydown') {
             keyboardEvt.preventDefault();
-            this.#pressedKeys.set(keyboardEvt.key, keyboardEvt);
+            this.#pressedKeys.add(keyboardEvt.key);
             this.#lastRelevantInput = keyboardEvt.timeStamp;
             this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key);
             return;

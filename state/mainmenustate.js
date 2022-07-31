@@ -190,11 +190,11 @@ class MainMenuState extends State {
     }
 
     onSleep() {
-        //
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
     }
 
     onWakeUp() {
-        //
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
     }
 
 
