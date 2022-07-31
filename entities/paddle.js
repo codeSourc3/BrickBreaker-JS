@@ -31,6 +31,7 @@ class Paddle extends GameObject {
         this._isUsingPointer = false;
         this._lastRelevantInput = 0;
         this._isDisabled = false;
+        this._movementSpeed = PADDLE_MOVEMENT_SPEED;
     }
 
     update(elapsed) {
@@ -181,18 +182,46 @@ class Paddle extends GameObject {
         this._paddleHeight = newHeight;
     }
 
-    moveLeft() {
-        this._paddleX -= 7;
+    set movementSpeed(value) {
+        this._movementSpeed = Number(value);
+    }
+
+    get movementSpeed() {
+        return this._movementSpeed;
+    }
+
+    /**
+     * 
+     * @param {number} timeStamp 
+     */
+    moveLeft(timeStamp) {
+        this._delta.x = -this.movementSpeed;
+        this._lastRelevantInput = timeStamp;
         if (this._paddleX < 0) {
             this._paddleX = 0;
         }
     }
 
-    moveRight() {
-        this._paddleX += 7;
-        if (this._paddleX + this._paddleWidth > Globals.getGameDimensions().width) {
+    /**
+     * 
+     * @param {number} timeStamp 
+     */
+    moveRight(timeStamp) {
+        this._delta.x = this.movementSpeed;
+        this._lastRelevantInput = timeStamp;
+        if (this.right > Globals.getGameDimensions().width) {
             this._paddleX = Globals.getGameDimensions().width - this._paddleWidth;
         }
+    }
+
+    /**
+     * Sets the delta x to zero.
+     * 
+     * @param {number} timeStamp 
+     */
+    resetMovement(timeStamp) {
+        this._delta.x = 0;
+        this._lastRelevantInput = timeStamp;
     }
 
     /**

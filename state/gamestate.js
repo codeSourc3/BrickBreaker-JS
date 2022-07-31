@@ -14,6 +14,7 @@ import { bounceOffPaddle, isCircleCollidingWithRect } from "../math/collisions.j
 import { PauseMenu } from "./PauseMenu.js";
 import { Pointer } from "../input/pointer.js";
 import { Vec2 } from "../math/vec2.js";
+import keyboard, { KeyboardManager, Keys } from "../input/keyboard.js";
 
 /**
  * Base class for all levels.
@@ -74,7 +75,8 @@ export class RunningGameState extends State {
         this._currentDelay = this._levelDelay;
 
         this._pauseHandler = this._pauseHandler.bind(this);
-
+        this.handlePaddleKeyDown = this.handlePaddleKeyDown.bind(this);
+        this.handlePaddleKeyUp = this.handlePaddleKeyUp.bind(this);
         this.addGameObject(this._player);
         this.addGameObject(this._paddle);
         this.addGameObject(this._bricks);
@@ -213,10 +215,10 @@ export class RunningGameState extends State {
     /**
      * Will not be removed until exit.
      * @private
-     * @param {KeyboardEvent} ev
+     * @param {string} key
      */
-    _pauseHandler(ev) {
-        if (ev.type === 'keypress' && ev.key === 'p') {
+    _pauseHandler(key) {
+        if (key === 'p') {
             this.game.events.emit(Game.Events.SLEEP);
         }
     }
@@ -232,7 +234,7 @@ export class RunningGameState extends State {
         this.enableAiming();
 
         // Add key listener for pausing and resuming the game
-        window.addEventListener('keypress', this._pauseHandler);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this._pauseHandler);
         // Add gamepad listener
     }
 
@@ -244,8 +246,10 @@ export class RunningGameState extends State {
         // Remove pointer listener(s).
         // Remove key listener(s);
         console.log('Exiting Game state');
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
 
-        window.removeEventListener('keypress', this._pauseHandler);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this._pauseHandler);
 
         // Remove gamepad listener(s).
 
@@ -257,7 +261,7 @@ export class RunningGameState extends State {
     }
 
     onSleep() {
-        window.removeEventListener('keypress', this._pauseHandler);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this._pauseHandler);
         this.disablePaddleMovement();
         // Save ball velocity
         this._ballData.x = this._ball.x;
@@ -302,7 +306,7 @@ export class RunningGameState extends State {
         } else {
             this.enablePaddleMovement();
         }
-        window.addEventListener('keypress', this._pauseHandler);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this._pauseHandler);
         this._ball.dx = this._ballData.dx;
         this._ball.dy = this._ballData.dy;
         console.debug('Waking up GameState');
@@ -310,15 +314,39 @@ export class RunningGameState extends State {
     }
 
     disablePaddleMovement() {
-        window.removeEventListener('keydown', this._paddle);
-        window.removeEventListener('keyup', this._paddle);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
         this._paddle.disablePointerInput();
     }
 
     enablePaddleMovement() {
-        window.addEventListener('keydown', this._paddle);
-        window.addEventListener('keyup', this._paddle);
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
         this._paddle.enablePointerInput();
+    }
+
+    /**
+     * 
+     * @param {string} key the KeyboardEvent.key
+     */
+    handlePaddleKeyDown(key) {
+        if (key === Keys.ARROW_LEFT || key === 'Left' || key === 'a') {
+            this._paddle.moveLeft(keyboard.lastRelevantInput);
+        } else if (key === Keys.ARROW_RIGHT || key === 'Left' || key === 'd') {
+            this._paddle.moveRight(keyboard.lastRelevantInput);
+        }
+    }
+
+    /**
+     * 
+     * @param {string} key the KeyboardEvent.key
+     */
+    handlePaddleKeyUp(key) {
+        const leftKeys = key === Keys.ARROW_LEFT || key === 'Left' || key === 'a';
+        const rightKeys = key === Keys.ARROW_RIGHT || key === 'Right' || key === 'd';
+        if (leftKeys || rightKeys) {
+            this._paddle.resetMovement(keyboard.lastRelevantInput);
+        }
     }
 
     /**

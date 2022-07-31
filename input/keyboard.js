@@ -28,6 +28,11 @@ class KeyboardManager {
     
     events = new PubSub();
 
+    static KEY_UP = 'key-up';
+    static KEY_DOWN = 'key-down';
+
+    #lastRelevantInput = 0;
+
     static Keys = Keys;
 
     constructor() {
@@ -57,16 +62,26 @@ class KeyboardManager {
         return this.#pressedKeys.has(KeyboardManager.Keys.SHIFT);
     }
 
+    get lastRelevantInput() {
+        return this.#lastRelevantInput;
+    }
+
     /**
      * 
      * @param {KeyboardEvent} keyboardEvt 
      */
     handleEvent(keyboardEvt) {
         if (keyboardEvt.type === 'keydown') {
+            keyboardEvt.preventDefault();
             this.#pressedKeys.set(keyboardEvt.key, keyboardEvt);
+            this.#lastRelevantInput = keyboardEvt.timeStamp;
+            this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key);
             return;
         } else if (keyboardEvt.type === 'keyup') {
+            keyboardEvt.preventDefault();
             this.#pressedKeys.delete(keyboardEvt.key);
+            this.#lastRelevantInput = keyboardEvt.timeStamp;
+            this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key);
             return;
         }
     }
@@ -74,4 +89,4 @@ class KeyboardManager {
 const keyboard = new KeyboardManager();
 export default keyboard;
 
-export {Keys};
+export {Keys, KeyboardManager};
