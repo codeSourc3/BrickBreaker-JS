@@ -83,8 +83,8 @@ class MainMenuState extends State {
                     btn.handler();
                 }
             } else if (keyboard.lastRelevantInput < pointer.lastUpdated) {
+                
                 btn.hovering = false;
-                btn.reset();
             }
         }
         super.updateState(elapsed);
