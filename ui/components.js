@@ -239,6 +239,7 @@ export class ButtonGroup extends UIObject {
         this.alignment = alignment;
         this._selectedBtnIndex = 0;
         this._lastArrowUpdated = now();
+        this._gap = gap;
     }
 
     add(button) {
@@ -247,7 +248,46 @@ export class ButtonGroup extends UIObject {
         }
     }
 
-    intersectsXY({x, y, lastUpdated}) {
+    /**
+     * Adds a new button to the bottom of the button group,
+     * resizing each button as needed.
+     * 
+     * @param {string} text the text for the button to display
+     * @param {number} maxHeightPercentage the maximum percentage of the 
+     * height of the canvas that should be taken up by the button. 
+     * @param {onClickCb} onClickCb 
+     * @param {onHoverCb} onHoverCb 
+     */
+    append(text, maxHeightPercentage, onClickCb, onHoverCb) {
+        if (this.layout === 'vertical' && this.alignment === 'center') {
+            let newBtnYCoord = this._y;
+            let newRowCount = this.buttons.length + 1;
+            let newBtnHeight = this._height / newRowCount;
+            newBtnHeight = Math.min(this.#ctx.canvas.height * maxHeightPercentage, newBtnHeight);
+            if (this.buttons.length > 1) {
+                newBtnYCoord = (newRowCount * (newBtnHeight)) + this._y;
+            }
+            let newBtn = new Button(text, this._x, newBtnYCoord, this._width, newBtnHeight);
+            if (onClickCb === undefined || typeof onClickCb !== 'function') {
+                throw new TypeError('Expected a function for the onClickCb')
+            }
+            newBtn.handler = onClickCb;
+            if (onHoverCb !== undefined) {
+                console.assert(typeof onHoverCb === 'function');
+                newBtn.onHover = onHoverCb;
+            }
+            this.buttons.push(newBtn);
+            // resize the rest of the buttons, if any
+            if (this.buttons.length === 1) return;
+            for (let i = 0; i < this.buttons.length - 1; i++) {
+                // resize each button to the new height.
+                this.buttons[i].height = newBtnHeight;
+                this.buttons[i].y = (this.buttons.length * (newBtnHeight)) + this._y;
+            }
+        }
+    }
+
+    intersectsXY({ x, y, lastUpdated }) {
         for (const btn of this.buttons) {
             if (btn.intersectsXY({ x, y })) {
                 this.buttons[this._selectedBtnIndex].hovering = false;
