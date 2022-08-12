@@ -1,47 +1,126 @@
-/**
- * @author Enzo Mayo
- * @since 12/09/2020
- */
-const Key = {
-    _pressed: {},
+import { PubSub } from "../eventemitter.js";
 
-    LEFT: 'ArrowLeft',
-    RIGHT: 'ArrowRight',
-    P: 'p',
-    Q: 'q',
-    A: 'a',
-    D: 'd',
+const Keys = Object.freeze({
+    ALT: 'Alt',
+    ALTGRAPH: 'AltGraph',
+    CAPSLOCK: 'CapsLock',
+    CONTROL: 'Control',
+    FN: 'Fn',
+    FNLOCK: 'FnLock',
+    META: 'Meta',
+    SHIFT: 'Shift',
+    ENTER: 'Enter',
+    TAB: 'Tab',
+    SPACE: ' ',
+    ARROW_DOWN: 'ArrowDown',
+    ARROW_LEFT: 'ArrowLeft',
+    ARROW_RIGHT: 'ArrowRight',
+    ARROW_UP: 'ArrowUp',
+    ESCAPE: 'Escape'
+});
 
-    init() {
-        this._pressed = {};
-    },
+
+class KeyboardManager {
     /**
-     * 
-     * @param {string} key 
+     * @type {Set<string>}
      */
-    isDown(key) {
-        return this._pressed[key];
-    },
+    #pressedKeys = new Set();
+    #bindings = new Map();
+    events = new PubSub();
 
-    /**
-     * 
-     * @param {KeyboardEvent} event 
-     */
-    onKeydown(event) {
-        console.assert(this._pressed !== undefined);
-        this._pressed[event.key] = event.key;
-        this._pressed[event.key] = true;
-    },
+    static KEY_UP = 'key-up';
+    static KEY_DOWN = 'key-down';
 
-    /**
-     * 
-     * @param {KeyboardEvent} event 
-     */
-    onKeyup(event) {
-        console.assert(this._pressed !== undefined);
-        delete this._pressed[event.key];
+    #lastRelevantInput = 0;
+
+    static Keys = Keys;
+
+    constructor() {
+        window.addEventListener('keydown', this);
+        window.addEventListener('keyup', this);
     }
 
-};
+    /**
+     * 
+     * @param {string} action 
+     * @param  {...string} keys 
+     */
+    bindKeys(action, ...keys) {
+        for (const key of keys) {
+            this.#bindings.set(key, action);
+        }
+    }
 
-export {Key};
+    /**
+     * 
+     * @param  {...string} keys 
+     */
+    unbindKeys(...keys) {
+        for (const key of keys) {
+            this.#bindings.delete(key);
+        }
+    }
+
+
+    /**
+     * Returns if the provided key was pressed as of the last event.
+     * 
+     * @param  {string} key the key corresponding to KeyboardEvent#key.
+     */
+    isPressed(key) {
+        return this.#pressedKeys.has(key);
+    }
+
+    isCtrlPressed() {
+        return this.#pressedKeys.has(KeyboardManager.Keys.CONTROL);
+    }
+
+    isAltPressed() {
+        return this.#pressedKeys.has(KeyboardManager.Keys.ALT);
+    }
+
+    isShiftPressed() {
+        return this.#pressedKeys.has(KeyboardManager.Keys.SHIFT);
+    }
+
+    get lastRelevantInput() {
+        return this.#lastRelevantInput;
+    }
+
+    unbindAll() {
+        this.#bindings.clear();
+    }
+
+    /**
+     * 
+     * @param {KeyboardEvent} keyboardEvt 
+     */
+    handleEvent(keyboardEvt) {
+        if (keyboardEvt.type === 'keydown') {
+            keyboardEvt.preventDefault();
+            this.#pressedKeys.add(keyboardEvt.key);
+            this.#lastRelevantInput = keyboardEvt.timeStamp;
+            if (this.#bindings.has(keyboardEvt.key)) {
+                this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key, this.#bindings.get(keyboardEvt.key), keyboardEvt.repeat);
+            } else {
+                this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key);
+            }
+            return;
+        } else if (keyboardEvt.type === 'keyup') {
+            keyboardEvt.preventDefault();
+            this.#pressedKeys.delete(keyboardEvt.key);
+            this.#lastRelevantInput = keyboardEvt.timeStamp;
+            if (this.#bindings.has(keyboardEvt.key)) {
+                this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key, this.#bindings.get(keyboardEvt.key), keyboardEvt.repeat);
+            } else {
+
+                this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key);
+            }
+            return;
+        }
+    }
+}
+const keyboard = new KeyboardManager();
+export default keyboard;
+
+export {Keys, KeyboardManager};

@@ -1,7 +1,12 @@
 import {State} from './state.js';
-import {Globals, Game} from '../game.js';
-import { centerText, Button } from '../ui/components.js';
+import {Game} from '../game.js';
+import { centerText, Button, ButtonGroup } from '../ui/components.js';
 import {Pointer} from '../input/pointer.js';
+import keyboard, { KeyboardManager, Keys } from '../input/keyboard.js';
+
+const noop = () => {
+    return;
+};
 
 class PauseMenu extends State {
     /**
@@ -12,10 +17,42 @@ class PauseMenu extends State {
         super('Pause Menu', game);
         this.title = 'Paused';
         /**
-         * @type {Button[]}
+         * @type {ButtonGroup}
          */
-        this.buttons = [];
-        
+        this.buttonGroup = new ButtonGroup(game.canvas, game.canvas.height / 3);
+        this._inputActionMap = new Map([
+            ['w', 'moveup'],
+            [Keys.ARROW_UP, 'moveup'],
+            ['Up', 'moveup'],
+            ['s', 'movedown'],
+            [Keys.ARROW_DOWN, 'movedown'],
+            ['Down', 'movedown'],
+            [Keys.ENTER, 'selectcurrentbutton'],
+            [Keys.SPACE, 'selectcurrentbutton']
+        ]);
+
+        this._keyDownHandler = key => {
+            if (this._inputActionMap.has(key)) {
+                const action = this._inputActionMap.get(key);
+                switch (action) {
+                    case 'moveup':
+                        this.buttonGroup.moveUp();
+                        console.info('Move up ', this.buttonGroup.currentSelected.text)
+                        break;
+                    case 'movedown':
+                        this.buttonGroup.moveDown();
+                        console.info('Move down ', this.buttonGroup.currentSelected.text);
+                        break;
+                    case 'selectcurrentbutton':
+                        this.buttonGroup.selectCurrent();
+                        break;
+                    default:
+                        noop();
+                        break;
+                }
+            }
+        };
+        this.bindToSelf(this._keyDownHandler);
         this.resumeCb = () => {
             this.game.events.emit(Game.Events.POP_STATE);
             console.debug('Waking up previous state');
@@ -27,8 +64,8 @@ class PauseMenu extends State {
             this.game.events.emit(Game.Events.POP_STATE);
             this.game.events.emit(Game.Events.WAKE_UP_STATE);
         };
-        this.onPKeyPressed = e => {
-            if (e.type === 'keypress' && e.key === 'p') {
+        this.onPKeyPressed = key => {
+            if (key === 'p') {
                 this.resumeCb();
             }
         };
@@ -42,12 +79,8 @@ class PauseMenu extends State {
         if (!pointer.attached) {
             pointer.attach();
         }
-        for (let i = 0, len = this.buttons.length; i < len; i++) {
-            if (this.buttons[i].intersectsXY(pointer) && pointer.wasClicked) {
-                this.buttons[i].handler();
-                console.debug(`Pause Menu button ${this.buttons[i].text} was clicked.`);
-                break;
-            }
+        if (this.buttonGroup.intersectsXY(pointer) && pointer.wasClicked) {
+            this.buttonGroup.selectCurrent();
         }
         super.updateState(elapsed);
     }
@@ -65,8 +98,8 @@ class PauseMenu extends State {
     }
 
     onEnter() {
-
-        window.addEventListener('keypress', this.onPKeyPressed);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this.onPKeyPressed);
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
         const buttonWidth = this.game.canvas.width / 6;
         const buttonHeight = this.game.canvas.height / 8;
         const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
@@ -76,8 +109,7 @@ class PauseMenu extends State {
             buttonWidth, 
             buttonHeight);
         resumeBtn.setHandler(this.resumeCb);
-        this.buttons.push(resumeBtn);
-        this.addGameObject(resumeBtn);
+        this.buttonGroup.add(resumeBtn);
         const backToMainMenuBtn = new Button('To Main Menu', 
             buttonX,
             this.game.canvas.height / 2,
@@ -85,13 +117,14 @@ class PauseMenu extends State {
             buttonHeight
         );
         backToMainMenuBtn.setHandler(this.backToMenuCb);
-        this.buttons.push(backToMainMenuBtn);
-        this.addGameObject(backToMainMenuBtn);
+        this.buttonGroup.add(backToMainMenuBtn);
+        this.addGameObject(this.buttonGroup);
         console.assert(!this.asleep, 'Pause menu should not be asleep');
     }
 
     onExit() {
-        window.removeEventListener('keypress', this.onPKeyPressed);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.onPKeyPressed);
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
     }
 
     onWakeUp() {

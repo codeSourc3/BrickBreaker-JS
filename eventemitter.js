@@ -1,4 +1,4 @@
-import { template } from "./utils.js";
+import { template } from "./utils/utils.js";
 
 /**
  * Internal function for validating event type
@@ -19,7 +19,8 @@ class PubSub {
      * @type {Map<string, Set<Function>}
      */
     #handlers = new Map();
-
+    #makingPassOn = '';
+    #cache = [];
 
     /**
      * 
@@ -34,8 +35,13 @@ class PubSub {
             throw new TypeError(typeErrorClosure(ERR_MSG_EVENT_TYPE, eventName));
         }
         if (this.#handlers.has(eventName)) {
-            const eventHandlers = this.#handlers.get(eventName);
-            eventHandlers.add(func);
+            if (this.#makingPassOn === eventName) {
+                this.#cache.push(func);
+            } else {
+                const eventHandlers = this.#handlers.get(eventName);
+                eventHandlers.add(func);
+            }
+            
         } else {
             this.#handlers.set(eventName, new Set([func]));
         }
@@ -76,10 +82,18 @@ class PubSub {
         if (!isValidEvent(eventName)) {
             throw new TypeError(typeErrorClosure(ERR_MSG_EVENT_TYPE, eventName));
         }
+        this.#makingPassOn = eventName;
         if (this.#handlers.has(eventName)) {
             let funcs = this.#handlers.get(eventName);
             funcs.forEach(fn => fn(...args));
         }
+        this.#makingPassOn = '';
+        let funcs = this.#handlers.get(eventName)
+        const len = this.#cache.length;
+        for (let i = 0; i < len; i++) {
+            funcs.add(this.#cache[i]);
+        }
+        this.#cache.length = 0;
     }
 
     *eventNames() {

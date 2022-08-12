@@ -58,3 +58,24 @@ export function rescale(x, y) {
         y: rescaledY
     };
 }
+
+/**
+ * 
+ * @param {number} value 
+ * @param {number} inMin 
+ * @param {number} inMax 
+ * @param {number} outMin 
+ * @param {number} outMax 
+ * @returns {number}
+ */
+export function scale(value, inMin, inMax, outMin, outMax) {
+    const result = (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+  
+    if (result < outMin) {
+      return outMin;
+    } else if (result > outMax) {
+      return outMax;
+    }
+  
+    return result;
+  }

@@ -7,7 +7,7 @@ import {State, StateStack} from './state/state.js';
 //import { Level1State } from "./state/gamestate.js";
 import { MainMenuState } from "./state/mainmenustate.js";
 import { Clock } from './clock.js';
-import { Key } from './input/keyboard.js';
+
 import {PubSub} from './eventemitter.js';
 import { Pointer } from './input/pointer.js';
 

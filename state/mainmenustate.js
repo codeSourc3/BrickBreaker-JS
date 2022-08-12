@@ -5,11 +5,14 @@
 import {State} from './state.js';
 import {Globals, Game} from '../game.js';
 import {Level1State} from './level1.js';
-import {centerText, Button} from '../ui/components.js';
+import {centerText, Button, ButtonGroup} from '../ui/components.js';
 import { Pointer } from '../input/pointer.js';
+import keyboard, { KeyboardManager, Keys } from '../input/keyboard.js';
 
 
-
+const noop = () => {
+    return;
+};
 
 class MainMenuState extends State {
     /**
@@ -19,16 +22,40 @@ class MainMenuState extends State {
     constructor(game) {
         super("Main Menu", game);
         this.title = 'Brick Breaker JS';
-        /**
-         * @type {Button[]}
-         */
-        this.buttons = [];
-        this.click = (e) => {
-            for (const btn of this.buttons) {
-                btn.clickedOn(e);
+        
+        this.buttonGroup = new ButtonGroup(game.canvas, game.canvas.height / 3);
+        this._selectedBtnIndex = 0;
+        this._inputActionMap = new Map([
+            ['w', 'moveup'],
+            [Keys.ARROW_UP, 'moveup'],
+            ['Up', 'moveup'],
+            ['s', 'movedown'],
+            [Keys.ARROW_DOWN, 'movedown'],
+            ['Down', 'movedown'],
+            [Keys.ENTER, 'selectcurrentbutton'],
+            [Keys.SPACE, 'selectcurrentbutton']
+        ]);
+
+        this._keyDownHandler = key => {
+            if (this._inputActionMap.has(key)) {
+                const action = this._inputActionMap.get(key);
+                switch (action) {
+                    case 'moveup':
+                        this.buttonGroup.moveUp();
+                        break;
+                    case 'movedown':
+                        this.buttonGroup.moveDown();
+                        break;
+                    case 'selectcurrentbutton':
+                        this.buttonGroup.selectCurrentButton();
+                        break;
+                    default:
+                        noop();
+                        break;
+                }
             }
         };
-        this.action = this.click.bind(this);
+        this.bindToSelf(this._keyDownHandler);
     }
 
     /**
@@ -40,9 +67,8 @@ class MainMenuState extends State {
         if (!pointer.attached) {
             pointer.attach();
         }
-        if (this.buttons[0].intersectsXY(pointer) && pointer.wasClicked) {
-            this.buttons[0].handler();
-            console.debug('Main menu updating');
+        if (this.buttonGroup.intersectsXY(pointer) && pointer.wasClicked) {
+            this.buttonGroup.selectCurrent();
         }
         super.updateState(elapsed);
     }
@@ -73,22 +99,26 @@ class MainMenuState extends State {
         
 
         console.log('Entering main menu state.');
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
         //Globals.getCanvasElement().addEventListener('click', this.action);
         // Buttons take up the lower half of the screen.
-        const startBtn = new Button('Start', 
-            Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
-            Globals.getCanvasElement().height / 3, 
-            Globals.getCanvasElement().width / 6, 
-            Globals.getCanvasElement().height / 8);
-        startBtn.setHandler(() => {
+        const startCb = () => {
             this.game.events.emit(Game.Events.SLEEP);
             this.game.events.emit(Game.Events.PUSH_STATE, new Level1State(this.game));
-        });
-        startBtn.handler.bind(this);
-        this.buttons.push(startBtn);
-        this.addGameObject(startBtn);
+        };
+        const buttonWidth = this.game.canvas.width / 6;
+        const buttonHeight = this.game.canvas.height / 8;
+        const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
+        const startBtn = new Button('Start', 
+            buttonX,
+            this.game.canvas.height / 2,
+            buttonWidth,
+            buttonHeight
+        );
+        startBtn.handler = startCb.bind(this);
+        this.buttonGroup.add(startBtn);
+        this.addGameObject(this.buttonGroup);
     }
-
     
 
     /**
@@ -98,16 +128,18 @@ class MainMenuState extends State {
     onExit() {
 
         console.log('Exiting main menu');
+        this._inputActionMap.clear();
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
         // addEventListener() and removeEventListener() weren't actually removing it.
         // This gives me more control anyway.
     }
 
     onSleep() {
-        //
+        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
     }
 
     onWakeUp() {
-        //
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
     }
 
 
