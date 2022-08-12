@@ -279,7 +279,7 @@ export class ButtonGroup extends UIObject {
             this.buttons.push(newBtn);
             // resize the rest of the buttons, if any
             if (this.buttons.length === 1) return;
-            for (let i = 0; i < newRowCount - 1; i++) {
+            for (let i = 0; i < this.buttons.length - 1; i++) {
                 // resize each button to the new height.
                 this.buttons[i].height = newBtnHeight;
                 this.buttons[i].y = (this.buttons.length * (newBtnHeight)) + this._y;
