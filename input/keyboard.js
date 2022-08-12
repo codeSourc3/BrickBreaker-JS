@@ -25,7 +25,7 @@ class KeyboardManager {
      * @type {Set<string>}
      */
     #pressedKeys = new Set();
-    
+    #bindings = new Map();
     events = new PubSub();
 
     static KEY_UP = 'key-up';
@@ -38,6 +38,27 @@ class KeyboardManager {
     constructor() {
         window.addEventListener('keydown', this);
         window.addEventListener('keyup', this);
+    }
+
+    /**
+     * 
+     * @param {string} action 
+     * @param  {...string} keys 
+     */
+    bindKeys(action, ...keys) {
+        for (const key of keys) {
+            this.#bindings.set(key, action);
+        }
+    }
+
+    /**
+     * 
+     * @param  {...string} keys 
+     */
+    unbindKeys(...keys) {
+        for (const key of keys) {
+            this.#bindings.delete(key);
+        }
     }
 
 
@@ -66,6 +87,10 @@ class KeyboardManager {
         return this.#lastRelevantInput;
     }
 
+    unbindAll() {
+        this.#bindings.clear();
+    }
+
     /**
      * 
      * @param {KeyboardEvent} keyboardEvt 
@@ -75,13 +100,22 @@ class KeyboardManager {
             keyboardEvt.preventDefault();
             this.#pressedKeys.add(keyboardEvt.key);
             this.#lastRelevantInput = keyboardEvt.timeStamp;
-            this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key);
+            if (this.#bindings.has(keyboardEvt.key)) {
+                this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key, this.#bindings.get(keyboardEvt.key), keyboardEvt.repeat);
+            } else {
+                this.events.emit(KeyboardManager.KEY_DOWN, keyboardEvt.key);
+            }
             return;
         } else if (keyboardEvt.type === 'keyup') {
             keyboardEvt.preventDefault();
             this.#pressedKeys.delete(keyboardEvt.key);
             this.#lastRelevantInput = keyboardEvt.timeStamp;
-            this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key);
+            if (this.#bindings.has(keyboardEvt.key)) {
+                this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key, this.#bindings.get(keyboardEvt.key), keyboardEvt.repeat);
+            } else {
+
+                this.events.emit(KeyboardManager.KEY_UP, keyboardEvt.key);
+            }
             return;
         }
     }
