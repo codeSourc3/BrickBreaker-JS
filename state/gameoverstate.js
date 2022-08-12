@@ -101,17 +101,8 @@ export class GameOverState extends State {
      */
     onEnter() {
         keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
-        const buttonWidth = this.game.canvas.width / 6;
-        const buttonHeight = this.game.canvas.height / 8;
-        const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
-        const backToMainMenuBtn = new Button('To Main Menu', 
-            buttonX,
-            this.game.canvas.height / 2,
-            buttonWidth,
-            buttonHeight
-        );
         backToMainMenuBtn.setHandler(this.backToMainMenuCb);
-        this.buttonGroup.add(backToMainMenuBtn);
+        this.buttonGroup.append('To Main Menu', 0.3, this.backToMainMenuCb);
         this.addGameObject(this.buttonGroup);
     }
 

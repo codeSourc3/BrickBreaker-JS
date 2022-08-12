@@ -77,11 +77,13 @@ export class RunningGameState extends State {
         this._pauseHandler = this._pauseHandler.bind(this);
         this.handlePaddleKeyDown = this.handlePaddleKeyDown.bind(this);
         this.handlePaddleKeyUp = this.handlePaddleKeyUp.bind(this);
+        this.bindToSelf(this.turnCursorLeft);
+        this.bindToSelf(this.turnCursorRight);
         this.addGameObject(this._player);
         this.addGameObject(this._paddle);
         this.addGameObject(this._bricks);
         this.addGameObject(this._ball);
-
+        keyboard.bindKeys('pausegame', 'p');
         /**
          * @private
          */
@@ -140,7 +142,7 @@ export class RunningGameState extends State {
                     }
                 }
             }
-        } else {
+        } else if (Pointer.getInstance().lastUpdated >= keyboard.lastRelevantInput) {
             const pointer = Pointer.getInstance();
             this.aim(pointer);
             if (pointer.wasClicked && this._currentDelay <= 0) {
@@ -217,8 +219,8 @@ export class RunningGameState extends State {
      * @private
      * @param {string} key
      */
-    _pauseHandler(key) {
-        if (key === 'p') {
+    _pauseHandler(key, action) {
+        if (action === 'pausegame') {
             this.game.events.emit(Game.Events.SLEEP);
         }
     }
@@ -229,7 +231,7 @@ export class RunningGameState extends State {
      */
     onEnter() {
         // Add pointer listener
-
+        this.registerControls();
         // Add key listener for paddle
         this.enableAiming();
 
@@ -246,8 +248,8 @@ export class RunningGameState extends State {
         // Remove pointer listener(s).
         // Remove key listener(s);
         console.log('Exiting Game state');
-        keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
-        keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
+        this.unregisterControls();
+        keyboard.unbindAll();
 
         keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this._pauseHandler);
 
@@ -262,6 +264,7 @@ export class RunningGameState extends State {
 
     onSleep() {
         keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this._pauseHandler);
+        this.unregisterControls();
         this.disablePaddleMovement();
         // Save ball velocity
         this._ballData.x = this._ball.x;
@@ -301,6 +304,7 @@ export class RunningGameState extends State {
     }
 
     onWakeUp() {
+        this.registerControls();
         if (this._isAiming) {
             this.enableAiming();
         } else {
@@ -313,15 +317,24 @@ export class RunningGameState extends State {
 
     }
 
-    disablePaddleMovement() {
+    unregisterControls() {
         keyboard.events.unsubscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
         keyboard.events.unsubscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
+    }
+
+    registerControls() {
+        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
+        keyboard.events.subscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
+    }
+
+    disablePaddleMovement() {
+        keyboard.unbindKeys('a', Keys.ARROW_LEFT, Keys.ARROW_RIGHT, 'd', 'Left', 'Right');
         this._paddle.disablePointerInput();
     }
 
     enablePaddleMovement() {
-        keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this.handlePaddleKeyDown);
-        keyboard.events.subscribe(KeyboardManager.KEY_UP, this.handlePaddleKeyUp);
+        keyboard.bindKeys('movepaddleleft', 'a', Keys.ARROW_LEFT, 'Left');
+        keyboard.bindKeys('movepaddleright', 'd', Keys.ARROW_RIGHT, 'Right');
         this._paddle.enablePointerInput();
     }
 
@@ -329,23 +342,41 @@ export class RunningGameState extends State {
      * 
      * @param {string} key the KeyboardEvent.key
      */
-    handlePaddleKeyDown(key) {
-        if (key === Keys.ARROW_LEFT || key === 'Left' || key === 'a') {
+    handlePaddleKeyDown(key, action, repeats) {
+        if (action === 'movepaddleleft') {
             this._paddle.moveLeft(keyboard.lastRelevantInput);
-        } else if (key === Keys.ARROW_RIGHT || key === 'Left' || key === 'd') {
+        } else if (action === 'movepaddleright') {
             this._paddle.moveRight(keyboard.lastRelevantInput);
         }
+        if (action === 'turncursorright') {
+            this.turnCursorRight(5);
+        } else if (action === 'turncursorleft') {
+            this.turnCursorLeft(5);
+        }
+    }
+
+    turnCursorLeft(amount) {
+        let currentX = this._aiming.dx;
+        let currentY = this.game.canvas.height / 2;
+        this.aim({x: Math.abs(currentX - amount), y: currentY});
+    }
+
+    turnCursorRight(amount) {
+        let gameCanvas = this.game.canvas;
+        let currentX = this._aiming.dx;
+        let currentY = this.game.canvas.height / 2;
+        this.aim({x: Math.min(currentX + amount, gameCanvas.width), y: currentY});
     }
 
     /**
      * 
      * @param {string} key the KeyboardEvent.key
      */
-    handlePaddleKeyUp(key) {
-        const leftKeys = key === Keys.ARROW_LEFT || key === 'Left' || key === 'a';
-        const rightKeys = key === Keys.ARROW_RIGHT || key === 'Right' || key === 'd';
-        if (leftKeys || rightKeys) {
+    handlePaddleKeyUp(key, action) {
+        if (action === 'movepaddleleft' || action === 'movepaddleright') {
             this._paddle.resetMovement(keyboard.lastRelevantInput);
+        } else if (action === 'fire') {
+            this.fire(3);
         }
     }
 
@@ -353,13 +384,18 @@ export class RunningGameState extends State {
      * Disables paddle movement as well as enabling aiming.
      */
     enableAiming() {
+        this.disablePaddleMovement();
+        keyboard.bindKeys('turncursorleft', 'a', Keys.ARROW_LEFT, 'Left');
+        keyboard.bindKeys('turncursorright', 'd', Keys.ARROW_RIGHT, 'Right');
+        keyboard.bindKeys('fire', Keys.SPACE);
         this._isAiming = true;
         this._currentDelay = this._levelDelay;
-        this.disablePaddleMovement();
+        
     }
 
     disableAiming() {
         this._isAiming = false;
+        keyboard.unbindKeys('a', Keys.ARROW_LEFT, 'Left', 'd', Keys.ARROW_RIGHT, 'Right', Keys.SPACE);
         this.enablePaddleMovement();
     }
 }
