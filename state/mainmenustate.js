@@ -47,7 +47,7 @@ class MainMenuState extends State {
                         this.buttonGroup.moveDown();
                         break;
                     case 'selectcurrentbutton':
-                        this.buttonGroup.selectCurrentButton();
+                        this.buttonGroup.selectCurrent();
                         break;
                     default:
                         noop();
