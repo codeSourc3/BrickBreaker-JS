@@ -1,4 +1,4 @@
-import { template } from "./utils.js";
+import { template } from "./utils/utils.js";
 
 /**
  * Internal function for validating event type
