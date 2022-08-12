@@ -100,8 +100,24 @@ class PauseMenu extends State {
     onEnter() {
         keyboard.events.subscribe(KeyboardManager.KEY_UP, this.onPKeyPressed);
         keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
-        this.buttonGroup.append('Resume', 0.1, this.resumeCb);
-        this.buttonGroup.append('To Main Menu', 0.1, this.backToMenuCb);
+        const buttonWidth = this.game.canvas.width / 6;
+        const buttonHeight = this.game.canvas.height / 8;
+        const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
+        const resumeBtn = new Button('Resume', 
+            buttonX, 
+            this.game.canvas.height / 3, 
+            buttonWidth, 
+            buttonHeight);
+        resumeBtn.setHandler(this.resumeCb);
+        this.buttonGroup.add(resumeBtn);
+        const backToMainMenuBtn = new Button('To Main Menu', 
+            buttonX,
+            this.game.canvas.height / 2,
+            buttonWidth,
+            buttonHeight
+        );
+        backToMainMenuBtn.setHandler(this.backToMenuCb);
+        this.buttonGroup.add(backToMainMenuBtn);
         this.addGameObject(this.buttonGroup);
         console.assert(!this.asleep, 'Pause menu should not be asleep');
     }

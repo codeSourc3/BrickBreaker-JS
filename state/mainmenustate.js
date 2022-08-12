@@ -106,7 +106,17 @@ class MainMenuState extends State {
             this.game.events.emit(Game.Events.SLEEP);
             this.game.events.emit(Game.Events.PUSH_STATE, new Level1State(this.game));
         };
-        this.buttonGroup.append('Start', 0.3, startCb);
+        const buttonWidth = this.game.canvas.width / 6;
+        const buttonHeight = this.game.canvas.height / 8;
+        const buttonX = this.game.canvas.width / 2 - (this.game.canvas.width / 6) / 2;
+        const startBtn = new Button('Start', 
+            buttonX,
+            this.game.canvas.height / 2,
+            buttonWidth,
+            buttonHeight
+        );
+        startBtn.handler = startCb.bind(this);
+        this.buttonGroup.add(startBtn);
         this.addGameObject(this.buttonGroup);
     }
     
