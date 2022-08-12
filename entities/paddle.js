@@ -225,7 +225,7 @@ class Paddle extends GameObject {
     }
 
     /**
-     * 
+     * @deprecated
      * @param {KeyboardEvent} evt 
      */
     _onKeyDown(evt) {
@@ -243,6 +243,10 @@ class Paddle extends GameObject {
         }
     }
 
+    /**
+     * @deprecated
+     * @param {} evt 
+     */
     _onKeyUp(evt) {
         if (evt.key === 'ArrowLeft' || evt.key === 'Left' || evt.key === 'a') {
             this._leftPressed = false;
@@ -258,7 +262,7 @@ class Paddle extends GameObject {
     }
 
     /**
-     * 
+     * @deprecated
      * @param {Event} evt the code handles keydown, keyup, and pointermove
      */
     handleEvent(evt) {
