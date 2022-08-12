@@ -1,4 +1,4 @@
-import {GameObject} from '../entities/GameObject.js'
+import { GameObject } from '../entities/GameObject.js'
 
 const now = () => performance.now();
 
@@ -8,13 +8,13 @@ const now = () => performance.now();
  */
 
 class UIObject extends GameObject {
-	
-	/**
-	 * @param {number} x the x coordinate relative to the upper left corner.
-	 * @param {number} y the y coordinate relative to the upper left corner.
-	 * @param {number} width the width of the ui object.
-	 * @param {number} height the height of the ui object.
-	 */
+
+    /**
+     * @param {number} x the x coordinate relative to the upper left corner.
+     * @param {number} y the y coordinate relative to the upper left corner.
+     * @param {number} width the width of the ui object.
+     * @param {number} height the height of the ui object.
+     */
     constructor(x, y, width, height) {
         super();
         this._x = x;
@@ -22,17 +22,17 @@ class UIObject extends GameObject {
         this._width = width;
         this._height = height;
     }
-    
+
     /**
      * Gets if the pointer is intersecting with this objects dimensions..
      * @param {PointerEvent} pointer the pointer event.
      * @return {boolean} true if pointer is within ui object, false otherwise.
      */
     intersects(pointer) {
-        return pointer.offsetX > this._x && 
-        pointer.offsetX < this._x + this._width 
-        && pointer.offsetY > this._y 
-        && pointer.offsetY < this._y + this._height;
+        return pointer.offsetX > this._x &&
+            pointer.offsetX < this._x + this._width
+            && pointer.offsetY > this._y
+            && pointer.offsetY < this._y + this._height;
     }
 
     /**
@@ -40,11 +40,11 @@ class UIObject extends GameObject {
      * @param {{x: number, y: number}} param0 
      * @returns 
      */
-    intersectsXY({x, y}) {
+    intersectsXY({ x, y }) {
         return x > this._x && x < this._x + this._width && y > this._y && y < this._y + this._height;
     }
 
-    
+
     get x() {
         return this._x;
     }
@@ -62,6 +62,22 @@ class UIObject extends GameObject {
         return this._height;
     }
 
+    set y(value) {
+        this._y = value;
+    }
+
+    set x(value) {
+        this._x = value;
+    }
+
+    set width(value) {
+        this._width = value;
+    }
+
+    set height(value) {
+        this._height = value;
+    }
+
     draw(ctx) {
         //
     }
@@ -72,24 +88,24 @@ class UIObject extends GameObject {
 }
 
 export class Button extends UIObject {
-	
-		/**
-		 * 
-		 * @param {string} text the text on the button
-		 * @param {number} x coordinate on the x-axis.
-         * - Starts at the left side of the canvas.
-		 * @param {number} y coordinate on the y-axis.
-         * - Starts at the top of the canvas.
-		 * @param {number} width the width of the button.
-		 * @param {number} height the height of the button.
-         * @param {string} buttonColor the color of the button background.
-         * @param {string} textColor the color of the text.
-		 */
+
+    /**
+     * 
+     * @param {string} text the text on the button
+     * @param {number} x coordinate on the x-axis.
+     * - Starts at the left side of the canvas.
+     * @param {number} y coordinate on the y-axis.
+     * - Starts at the top of the canvas.
+     * @param {number} width the width of the button.
+     * @param {number} height the height of the button.
+     * @param {string} buttonColor the color of the button background.
+     * @param {string} textColor the color of the text.
+     */
     constructor(text, x, y, width, height, {
-        buttonColor='blue', textColor='white', 
-        hoverTextColor=textColor, hoverBackgroundColor='lightblue',
-        fontSize=20
-    }={}) {
+        buttonColor = 'blue', textColor = 'white',
+        hoverTextColor = textColor, hoverBackgroundColor = 'lightblue',
+        fontSize = 20
+    } = {}) {
         super(x, y, width, height);
         this._clicked = false;
         this.text = text;
@@ -103,8 +119,7 @@ export class Button extends UIObject {
         this.fontSize = fontSize;
         /**
          * 
-         * @param {number} elapsed the amount of milliseconds since last
-         * render.
+         * @type {onHoverCb}
          */
         this.onHover = (elapsed) => {
             this.currentButtonColor = this.hoverBackgroundColor;
@@ -112,14 +127,14 @@ export class Button extends UIObject {
         };
     }
 
-		/**
-		 * Sets the handler of the Button.
-		 * @param {function} fn the handler function.
-		 */
+    /**
+     * Sets the handler of the Button.
+     * @param {onClickCb} fn the handler function.
+     */
     setHandler(fn) {
         this.handler = fn;
     }
-    
+
     /**
      * When pointer is down on the button's position.
      * @param {PointerEvent} pointer 
@@ -158,7 +173,7 @@ export class Button extends UIObject {
         ctx.fillRect(this.x, this.y, this.width, this.height);
         // text options
 
-        
+
         ctx.fillStyle = this.currentTextColor;
         ctx.font = this.fontSize + 'px sans-serif';
 
@@ -201,7 +216,7 @@ export function centerText(ctx, y, text) {
 
 export class ButtonGroup extends UIObject {
     #ctx;
-    
+
     /**
      * @type {Button[]}
      */
@@ -210,10 +225,11 @@ export class ButtonGroup extends UIObject {
      * 
      * @param {HTMLCanvasElement} canvas 
      * @param {number} y the y-axis
-     * @param {'vertical' | 'horizontal'} layout 
-     * @param {'center' | 'left' | 'right'} alignment 
+     * @param {object} settings 
+     * @param {'vertical' | 'horizontal'} settings.layout 
+     * @param {'center' | 'left' | 'right'} settings.alignment 
      */
-    constructor(canvas, y, layout='vertical', alignment='center') {
+    constructor(canvas, y, {layout='vertical', alignment='center', gap=20}={}) {
         let width = canvas.width / 3;
         let x = (canvas.width - width) / 2;
         let groupHeight = canvas.height - y;
@@ -223,6 +239,7 @@ export class ButtonGroup extends UIObject {
         this.alignment = alignment;
         this._selectedBtnIndex = 0;
         this._lastArrowUpdated = now();
+        this._gap = gap;
     }
 
     add(button) {
@@ -231,9 +248,48 @@ export class ButtonGroup extends UIObject {
         }
     }
 
-    intersectsXY({x, y, lastUpdated}) {
+    /**
+     * Adds a new button to the bottom of the button group,
+     * resizing each button as needed.
+     * 
+     * @param {string} text the text for the button to display
+     * @param {number} maxHeightPercentage the maximum percentage of the 
+     * height of the canvas that should be taken up by the button. 
+     * @param {onClickCb} onClickCb 
+     * @param {onHoverCb} onHoverCb 
+     */
+    append(text, maxHeightPercentage, onClickCb, onHoverCb) {
+        if (this.layout === 'vertical' && this.alignment === 'center') {
+            let newBtnYCoord = this._y;
+            let newRowCount = this.buttons.length + 1;
+            let newBtnHeight = this._height / newRowCount;
+            newBtnHeight = Math.min(this.#ctx.canvas.height * maxHeightPercentage, newBtnHeight);
+            if (this.buttons.length > 1) {
+                newBtnYCoord = (newRowCount * (newBtnHeight)) + this._y;
+            }
+            let newBtn = new Button(text, this._x, newBtnYCoord, this._width, newBtnHeight);
+            if (onClickCb === undefined || typeof onClickCb !== 'function') {
+                throw new TypeError('Expected a function for the onClickCb')
+            }
+            newBtn.handler = onClickCb;
+            if (onHoverCb !== undefined) {
+                console.assert(typeof onHoverCb === 'function');
+                newBtn.onHover = onHoverCb;
+            }
+            this.buttons.push(newBtn);
+            // resize the rest of the buttons, if any
+            if (this.buttons.length === 1) return;
+            for (let i = 0; i < newRowCount - 1; i++) {
+                // resize each button to the new height.
+                this.buttons[i].height = newBtnHeight;
+                this.buttons[i].y = (this.buttons.length * (newBtnHeight)) + this._y;
+            }
+        }
+    }
+
+    intersectsXY({ x, y, lastUpdated }) {
         for (const btn of this.buttons) {
-            if (btn.intersectsXY({x, y})) {
+            if (btn.intersectsXY({ x, y })) {
                 this.buttons[this._selectedBtnIndex].hovering = false;
                 btn.hovering = true;
                 this._selectedBtnIndex = this.buttons.indexOf(btn);
@@ -290,3 +346,13 @@ export class ButtonGroup extends UIObject {
         return this.buttons[this._selectedBtnIndex];
     }
 }
+
+/**
+ * This callback is called on button click.
+ * @callback onClickCb
+ */
+
+/**
+ * @callback onHoverCb
+ * @param {number} elapsed the amount of time elapsed since the last frame.
+ */
