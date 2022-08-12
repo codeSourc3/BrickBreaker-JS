@@ -5,7 +5,7 @@
 import {State} from './state.js';
 import {Globals, Game} from '../game.js';
 import {Level1State} from './level1.js';
-import {centerText, Button} from '../ui/components.js';
+import {centerText, Button, ButtonGroup} from '../ui/components.js';
 import { Pointer } from '../input/pointer.js';
 import keyboard, { KeyboardManager, Keys } from '../input/keyboard.js';
 
@@ -22,14 +22,9 @@ class MainMenuState extends State {
     constructor(game) {
         super("Main Menu", game);
         this.title = 'Brick Breaker JS';
-        /**
-         * @type {Button[]}
-         */
-        this.buttons = [];
+        
+        this.buttonGroup = new ButtonGroup(game.canvas, game.canvas.height / 3);
         this._selectedBtnIndex = 0;
-        this.bindToSelf(this.moveDown);
-        this.bindToSelf(this.moveUp);
-        this.bindToSelf(this.selectCurrentButton);
         this._inputActionMap = new Map([
             ['w', 'moveup'],
             [Keys.ARROW_UP, 'moveup'],
@@ -46,15 +41,13 @@ class MainMenuState extends State {
                 const action = this._inputActionMap.get(key);
                 switch (action) {
                     case 'moveup':
-                        this.moveUp();
-                        console.info('Move up ', this._selectedBtnIndex)
+                        this.buttonGroup.moveUp();
                         break;
                     case 'movedown':
-                        this.moveDown();
-                        console.info('Move down ', this._selectedBtnIndex);
+                        this.buttonGroup.moveDown();
                         break;
                     case 'selectcurrentbutton':
-                        this.selectCurrentButton();
+                        this.buttonGroup.selectCurrentButton();
                         break;
                     default:
                         noop();
@@ -74,18 +67,8 @@ class MainMenuState extends State {
         if (!pointer.attached) {
             pointer.attach();
         }
-        for (let i = 0; i < this.buttons.length; i++) {
-            const btn = this.buttons[i];
-            if (btn.intersectsXY(pointer)) {
-                btn.hovering = true;
-                this._selectedBtnIndex = i;
-                if (pointer.wasClicked) {
-                    btn.handler();
-                }
-            } else if (keyboard.lastRelevantInput < pointer.lastUpdated) {
-                
-                btn.hovering = false;
-            }
+        if (this.buttonGroup.intersectsXY(pointer) && pointer.wasClicked) {
+            this.buttonGroup.selectCurrent();
         }
         super.updateState(elapsed);
     }
@@ -119,61 +102,13 @@ class MainMenuState extends State {
         keyboard.events.subscribe(KeyboardManager.KEY_DOWN, this._keyDownHandler);
         //Globals.getCanvasElement().addEventListener('click', this.action);
         // Buttons take up the lower half of the screen.
-        const startBtn = new Button('Start', 
-            Globals.getCanvasElement().width / 2 - (Globals.getCanvasElement().width / 6) / 2, 
-            Globals.getCanvasElement().height / 3, 
-            Globals.getCanvasElement().width / 6, 
-            Globals.getCanvasElement().height / 8);
-        startBtn.setHandler(() => {
+        const startCb = () => {
             this.game.events.emit(Game.Events.SLEEP);
             this.game.events.emit(Game.Events.PUSH_STATE, new Level1State(this.game));
-        });
-        startBtn.handler.bind(this);
-        startBtn.onHover = elapsed => {
-            startBtn.currentButtonColor = startBtn.hoverBackgroundColor;
-            startBtn.currentTextColor = startBtn.hoverTextColor;
         };
-        this.buttons.push(startBtn);
-        this.addGameObject(startBtn);
+        this.buttonGroup.append('Start', 0.3, startCb);
+        this.addGameObject(this.buttonGroup);
     }
-
-    /**
-     * Attempts to move up the button group.
-     * 
-     */
-    moveUp() {
-
-        this.buttons[this._selectedBtnIndex].hovering = false;
-        if (this._selectedBtnIndex > 0) {
-            // have not reached first button.
-            this._selectedBtnIndex--;
-        }
-        this.buttons[this._selectedBtnIndex].hovering = true;
-    }
-
-    moveDown() {
-
-        this.buttons[this._selectedBtnIndex].hovering = false;
-        if (this._selectedBtnIndex + 1 < this.buttons.length) {
-            // have not reached last button
-            this._selectedBtnIndex++;
-        }
-        this.buttons[this._selectedBtnIndex].hovering = true;
-    }
-
-    selectCurrentButton() {
-        console.assert(
-            this._selectedBtnIndex >= 0 && this._selectedBtnIndex < this.buttons.length,
-             'Selected button not within range'
-        );
-        const selectedButton = this.buttons[this._selectedBtnIndex];
-        if (selectedButton.handler !== undefined) {
-            selectedButton.hovering = false;
-            selectedButton.handler();
-        }
-        
-    }
-
     
 
     /**
