@@ -240,10 +240,12 @@ class Game  {
     }
 
     _pushState(state) {
+        this.pointer.reset();
         this._gameMode.push(state);
     }
 
     _popState() {
+        this.pointer.reset();
         this._gameMode.pop();
     }
 

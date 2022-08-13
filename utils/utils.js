@@ -17,4 +17,15 @@ function template(strings, ...keys) {
     };
 }
 
+/**
+ * 
+ * @this 
+ * @param {Function} func 
+ * @param {any} thisObj 
+ * @param  {...any} args 
+ */
+export function defer(func, thisObj, ...args) {
+    setTimeout(func.bind(thisObj), 0.01, ...args);
+}
+
 export {Logger, template};

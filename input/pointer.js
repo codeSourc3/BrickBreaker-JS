@@ -73,6 +73,10 @@ export class Pointer {
         return this.#wasClicked;
     }
 
+    reset() {
+        this.#wasClicked = false;
+    }
+
     /**
      * 
      * @param {PointerEvent} evt 
