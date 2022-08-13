@@ -348,11 +348,11 @@ export class RunningGameState extends State {
         } else if (action === 'movepaddleright') {
             this._paddle.moveRight(keyboard.lastRelevantInput);
         }
-        if (action === 'turncursorright') {
-            this.turnCursorRight(5);
-        } else if (action === 'turncursorleft') {
-            this.turnCursorLeft(5);
-        }
+        // if (action === 'turncursorright') {
+        //     this.turnCursorRight(5);
+        // } else if (action === 'turncursorleft') {
+        //     this.turnCursorLeft(5);
+        // }
     }
 
     turnCursorLeft(amount) {
@@ -387,7 +387,7 @@ export class RunningGameState extends State {
         this.disablePaddleMovement();
         keyboard.bindKeys('turncursorleft', 'a', Keys.ARROW_LEFT, 'Left');
         keyboard.bindKeys('turncursorright', 'd', Keys.ARROW_RIGHT, 'Right');
-        keyboard.bindKeys('fire', Keys.SPACE);
+        // keyboard.bindKeys('fire', Keys.SPACE);
         this._isAiming = true;
         this._currentDelay = this._levelDelay;
         
